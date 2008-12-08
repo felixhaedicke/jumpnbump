@@ -3340,6 +3340,7 @@ void deinit_program(void)
 		free(mask_pic);
 
 	remove_keyb_handler();
+	exit_fullscreen();
 
 #ifdef DOS
 	regs.x.ax = 0x3;

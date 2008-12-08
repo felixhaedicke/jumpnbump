@@ -360,6 +360,7 @@ void register_mask(void *pixels);
 #ifdef USE_SDL
 /* long filelength(int handle); */
 void fs_toggle();
+void exit_fullscreen();
 int intr_sysupdate();
 #endif
 

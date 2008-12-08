@@ -226,6 +226,11 @@ void fs_toggle()
 		fullscreen ^= 1;
 }
 
+void exit_fullscreen()
+{
+	if (fullscreen)
+		fs_toggle();
+}
 
 void wait_vrt(int mix)
 {
