@@ -23,6 +23,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <fcntl.h>
@@ -83,8 +84,13 @@ int main(int argc, char **argv)
 	memset(filename, 0, sizeof(filename));
 	strncpy(filename, datafile[i].filename, 12);
 	printf("Extracting %s ", filename);
+	fflush(stdout);
 
-	outfd = open(filename, O_RDWR | O_CREAT | O_BINARY, 0644);
+	if (unlink(filename) == -1 && errno != ENOENT) {
+	    perror("cannot unlink file");
+	    exit(1);
+	}
+	outfd = open(filename, O_RDWR | O_CREAT | O_EXCL | O_BINARY, 0644);
 	if (!outfd) {
 	    perror("cant open file");
 	    exit(1);

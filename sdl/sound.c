@@ -23,6 +23,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#include <stdlib.h>
+#include <string.h>
 #include "globals.h"
 #include <limits.h>
 #ifndef _MSC_VER
@@ -463,11 +465,8 @@ char dj_ready_mod(char mod_num)
 {
 #ifndef NO_SDL_MIXER
 	FILE *tmp;
-# if ((defined _MSC_VER) || (defined __MINGW32__))
-	char filename[] = "jnb.tmpmusic.mod";
-# else
-	char filename[] = "/tmp/jnb.tmpmusic.mod";
-# endif
+	int tmp_fd;
+	char* filename;
 	unsigned char *fp;
 	int len;
 
@@ -506,15 +505,24 @@ char dj_ready_mod(char mod_num)
 		return 0;
 	}
 
-	tmp = fopen(filename, "wb");
-	if (tmp) {
-        fwrite(fp, len, 1, tmp);
-		fflush(tmp);
-		fclose(tmp);
+	filename = strdup("/tmp/jumpnbump.mod.XXXXXX");
+	tmp_fd = mkstemp(filename);
+	if (tmp_fd == -1) {
+		free(filename);
+		return 0;
 	}
+	tmp = fdopen(tmp_fd, "wb");
+	if (!tmp) {
+		free(filename);
+		return 0;
+	}
+	fwrite(fp, len, 1, tmp);
+	fflush(tmp);
+	fclose(tmp);
 
 	current_music = Mix_LoadMUS(filename);
 	unlink(filename);
+	free(filename);
 	if (current_music == NULL) {
 		fprintf(stderr, "Couldn't load music: %s\n", SDL_GetError());
 		return 0;
