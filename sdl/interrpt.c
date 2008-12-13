@@ -419,6 +419,9 @@ int intr_sysupdate()
 				break;
 			}
 			break;
+		case SDL_QUIT:
+			deinit_program();
+			break;
 		default:
 			break;
 		}
