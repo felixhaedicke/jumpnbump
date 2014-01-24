@@ -30,8 +30,6 @@
 extern "C" {
 #endif
 
-#include "config.h"
-
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -50,41 +48,17 @@ extern "C" {
 # include <pc.h>
 #endif
 
-#ifdef _MSC_VER
-# define WIN32_LEAN_AND_MEAN
-# include <windows.h>
-# include <sys/stat.h>
-# include <io.h>
-# include "SDL.h"
-# if USE_SDL_MIXER
-#  include "SDL_mixer.h"
-# endif
-#else
-# ifdef USE_SDL
-#  include <sys/stat.h>
-#  include "SDL.h"
-#  if USE_SDL_MIXER
-#   include "SDL_mixer.h"
-#  endif
-# endif
+#include <SDL.h>
+#include <SDL_mixer.h>
+
+#ifndef WIN32
+#  define stricmp strcasecmp
 #endif
 
-#ifndef HAVE_STRICMP
-# ifdef HAVE_STRCASECMP
-#  define stricmp strcasecmp
-# else
-#  error no suitable replacement for stricmp found!
-# endif
-#endif
-	
-#ifndef HAVE_STRNICMP
-# ifdef HAVE_STRNCASECMP
+#ifndef WIN32
 #  define strnicmp strncasecmp
-# else
-#  error no suitable replacement for strnicmp found!
-# endif
 #endif
-	
+
 #define JNB_MAX_PLAYERS 4
 
 #define JNB_INETPORT 11111
@@ -107,14 +81,6 @@ extern int scale_up;
 
 extern int ai[JNB_MAX_PLAYERS];
 
-#ifndef USE_SDL
-#define KEY_PL1_LEFT 0xcb
-#define KEY_PL1_RIGHT	0xcd
-#define KEY_PL1_JUMP 0xc8
-#define KEY_PL2_LEFT 0x1e
-#define KEY_PL2_RIGHT	0x20
-#define KEY_PL2_JUMP 0x11
-#else
 #define KEY_PL1_LEFT SDLK_LEFT
 #define KEY_PL1_RIGHT	SDLK_RIGHT
 #define KEY_PL1_JUMP SDLK_UP
@@ -127,7 +93,6 @@ extern int ai[JNB_MAX_PLAYERS];
 #define KEY_PL4_LEFT SDLK_KP4
 #define KEY_PL4_RIGHT	SDLK_KP6
 #define KEY_PL4_JUMP SDLK_KP8
-#endif
 
 #define NUM_POBS 200
 #define NUM_OBJECTS 200
@@ -178,15 +143,7 @@ extern int ai[JNB_MAX_PLAYERS];
 #define BAN_ICE		3
 #define BAN_SPRING	4
 
-#ifndef DATA_PATH
-#ifdef __APPLE__
-#define	DATA_PATH "data/jumpbump.dat"
-#elif _WIN32
-#define	DATA_PATH "data/jumpbump.dat"
-#else
-#define	DATA_PATH PREFIX"/share/jumpnbump/jumpbump.dat"
-#endif
-#endif
+#define	DATA_PATH "jumpbump.dat"
 
 typedef struct {
 	int num_images;
