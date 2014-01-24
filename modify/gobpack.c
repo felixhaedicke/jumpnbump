@@ -1,3 +1,4 @@
+#include <libgen.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -404,6 +405,7 @@ int main(int argc, char **argv)
 
 		strcpy(filename, argv[1]);
 		strcat(filename, ".gob");
+		filename = basename(filename);
 		f = fopen(filename, "wb");
 		if (!f) {
 			printf("Couldn't open file %s\n", filename);
