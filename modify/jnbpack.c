@@ -23,8 +23,10 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#include <libgen.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -106,21 +108,27 @@ int main(int argc, char **argv)
 	offset = 4 + (num_entries * 20);
 
 	for (i = 0; i < num_entries; i++) {
+		char* entry_path;
+		char* entry_basename;
 		struct stat dummy;
 		if (stat(argv[i], &dummy)) {
 			fprintf(stderr, "%s is not accessible: ", argv[i]);
 			perror("");
 			exit(1);
 		}
-		if (strlen(argv[i]) > 12) {
-			fprintf(stderr, "filename %s is longer than 12 chars\n", argv[i]);
+		
+		entry_path = strdup(argv[i]);
+		entry_basename = basename(entry_path);
+		if (strlen(entry_basename) > 12) {
+			fprintf(stderr, "filename for file %s is longer than 12 chars\n", argv[i]);
 			exit(1);
 		}
-		strncpy(datafile[i].filename, argv[i], 12);
+		strncpy(datafile[i].filename, entry_basename, 12);
 		datafile[i].size = dummy.st_size;
 		/* num_entries * (12 + 8) */
 		datafile[i].offset = offset;
 		offset += datafile[i].size;
+		free(entry_path);
 	}
 
 	/* here, we checked that all files are ok, and ready to roll the packfile */
