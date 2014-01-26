@@ -29,7 +29,7 @@ extern unsigned int ban_map[17][22];
 
 void fireworks(void)
 {
-	char *handle;
+	unsigned char *handle;
 	int c1, c2;
 	int s1, s2, s3;
 	char pal[768];
@@ -57,9 +57,6 @@ void fireworks(void)
 
 	memset(mask_pic, 0, JNB_WIDTH*JNB_HEIGHT);
 	register_mask(mask_pic);
-
-	recalculate_gob(&rabbit_gobs, pal);
-	recalculate_gob(&object_gobs, pal);
 
 	memset(ban_map, 0, sizeof(ban_map));
 
@@ -106,8 +103,6 @@ void fireworks(void)
 		stars[c1].back[0] = stars[c1].back[1] = get_pixel(0, s1, s2);
 	}
 	draw_end();
-
-	dj_set_nosound(0);
 
 	main_info.page_info[0].num_pobs = 0;
 	main_info.page_info[1].num_pobs = 0;
@@ -188,7 +183,7 @@ void fireworks(void)
 						add_object(OBJ_FLESH, (rabbits[c1].x >> 16) + 6 + rnd(5), (rabbits[c1].y >> 16) + 6 + rnd(5), rabbits[c1].x_add + (rnd(65535) - 32768) * 3, rabbits[c1].y_add + (rnd(65535) - 32768) * 3, 0, 78);
 					for (c2 = 0; c2 < 10; c2++)
 						add_object(OBJ_FLESH, (rabbits[c1].x >> 16) + 6 + rnd(5), (rabbits[c1].y >> 16) + 6 + rnd(5), rabbits[c1].x_add + (rnd(65535) - 32768) * 3, rabbits[c1].y_add + (rnd(65535) - 32768) * 3, 0, 79);
-					dj_play_sfx(SFX_DEATH, SFX_DEATH_FREQ, 64, 0, 0, -1);
+					dj_play_sfx(SFX_DEATH, SFX_DEATH_FREQ, 64, -1);
 					continue;
 				}
 				rabbits[c1].frame_tick++;
@@ -242,8 +237,6 @@ void fireworks(void)
 		draw_end();
 
 	}
-
-	dj_set_nosound(1);
 
 }
 

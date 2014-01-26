@@ -34,7 +34,7 @@ static SDL_Joystick *joys[4];
 /* I find using the vertical axis to be annoying -- dnb */
 #define JOY_JUMP(num) (num_joys>num && SDL_JoystickGetButton(joys[num], 0))
 
-int calib_joy(int type)
+int calib_joy()
 {
 	return 1;
 }

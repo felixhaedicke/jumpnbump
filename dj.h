@@ -93,17 +93,9 @@ typedef struct dj_mod_info {
 
 extern char dj_init(void);
 extern void dj_deinit(void);
-extern void dj_start(void);
-extern void dj_stop(void);
-extern void dj_set_nosound(char flag);
 extern char dj_set_sd(char sd_type, short port, char irq, char dma);
-extern char dj_autodetect_sd(void);
 extern void dj_get_sd_string(char *strbuf);
-extern char dj_set_stereo(char flag);
 extern void dj_reverse_stereo(char flag);
-extern void dj_set_auto_mix(char flag);
-extern unsigned short dj_set_mixing_freq(unsigned short freq);
-extern void dj_set_dma_time(unsigned short time);
 extern char dj_get_hardware_info(dj_hardware_info *ptr);
 extern char dj_get_mixing_info(dj_mixing_info *ptr);
 extern char dj_get_mod_info(char mod_num, dj_mod_info *ptr);
@@ -117,12 +109,12 @@ extern void dj_mix(void);
 extern char dj_set_num_sfx_channels(char num_channels);
 extern void dj_set_sfx_volume(char volume);
 extern char dj_get_sfx_volume(void);
-extern void dj_play_sfx(unsigned char sfx_num, unsigned short freq, char volume, char panning, unsigned short delay, char channel);
+extern void dj_play_sfx(unsigned char sfx_num, unsigned short freq, char volume, char channel);
 extern char dj_get_sfx_settings(unsigned char sfx_num, sfx_data *data);
 extern char dj_set_sfx_settings(unsigned char sfx_num, sfx_data *data);
 extern void dj_set_sfx_channel_volume(char channel_num, char volume);
 extern void dj_stop_sfx_channel(char channel_num);
-extern char dj_load_sfx(unsigned char *file_handle, char *filename, int file_length, char sfx_type, unsigned char sfx_num);
+extern char dj_load_sfx(unsigned char *file_handle, int file_length, unsigned char sfx_num);
 extern void dj_free_sfx(unsigned char sfx_num);
 
 extern char dj_ready_mod(char mod_num);
@@ -130,6 +122,5 @@ extern char dj_start_mod(void);
 extern void dj_stop_mod(void);
 extern void dj_set_mod_volume(char volume);
 extern char dj_get_mod_volume(void);
-extern char dj_load_mod(unsigned char *file_handle, char *filename, char mod_num);
 extern void dj_free_mod(char mod_num);
 

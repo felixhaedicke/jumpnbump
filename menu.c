@@ -69,8 +69,8 @@ int menu(void)
 	int esc_pressed;
 	int end_loop_flag, new_game_flag, fade_flag;
 	int mod_vol = 0, mod_fade_direction = 0;
-	int cur_message;
-	int fade_dir, fade_count, fade_tick;
+	unsigned int cur_message;
+	int fade_dir, fade_count;
 	char fade_pal[48];
 	int update_count;
 
@@ -100,14 +100,12 @@ int menu(void)
 	dj_set_mod_volume((char)mod_vol);
 	dj_set_sfx_volume(64);
 	dj_start_mod();
-	dj_set_nosound(0);
 
 	memset(fade_pal, 0, 48);
 	setpalette(240, 16, fade_pal);
 
 	fade_dir = 0;
 	fade_count = 0;
-	fade_tick = 0;
 	cur_message = NUM_MESSAGES - 1;
 
 	main_info.page_info[0].num_pobs = 0;
@@ -356,7 +354,7 @@ int menu(void)
 								player[c1].frame_tick = 0;
 								player[c1].image = player_anims[player[c1].anim].frame[player[c1].frame].image + player[c1].direction * 9;
 								player[c1].jump_ready = 0;
-								dj_play_sfx(SFX_JUMP, (unsigned short)(SFX_JUMP_FREQ + rnd(2000) - 1000), 64, 0, 0, -1);
+								dj_play_sfx(SFX_JUMP, (unsigned short)(SFX_JUMP_FREQ + rnd(2000) - 1000), 64, -1);
 							}
 						} else {
 							if ((player[c1].y >> 16) >= (138 + c1 * 2)) {
@@ -366,7 +364,7 @@ int menu(void)
 								player[c1].frame_tick = 0;
 								player[c1].image = player_anims[player[c1].anim].frame[player[c1].frame].image + player[c1].direction * 9;
 								player[c1].jump_ready = 0;
-								dj_play_sfx(SFX_JUMP, (unsigned short)(SFX_JUMP_FREQ + rnd(2000) - 1000), 64, 0, 0, -1);
+								dj_play_sfx(SFX_JUMP, (unsigned short)(SFX_JUMP_FREQ + rnd(2000) - 1000), 64, -1);
 							}
 						}
 					}
@@ -482,7 +480,6 @@ int menu(void)
 				}
 			}
 			if (fade_flag == 0 && end_loop_flag == 1) {
-				menu_deinit();
 				if (new_game_flag == 1)
 					return 0;
 				else
@@ -508,7 +505,6 @@ int menu(void)
 					put_text(1, 200, 220, message[cur_message], 2);
 					fade_dir = 1;
 					fade_count = 0;
-					fade_tick = 0;
 					draw_end();
 				}
 				break;
@@ -522,7 +518,6 @@ int menu(void)
 				} else {
 					fade_dir = 0;
 					fade_count = 0;
-					fade_tick = 0;
 				}
 				break;
 			}
@@ -570,7 +565,7 @@ int menu(void)
 
 int menu_init(void)
 {
-	char *handle;
+	unsigned char *handle;
 	int c1;
 
 	fillpalette(0, 0, 0);
@@ -600,9 +595,6 @@ int menu_init(void)
 		menu_pal[(240 + c1) * 3 + 2] = c1 << 2;
 	}
 
-	recalculate_gob(&rabbit_gobs, menu_pal);
-	recalculate_gob(&font_gobs, menu_pal);
-	recalculate_gob(&object_gobs, menu_pal);
 	register_background(background_pic, menu_pal);
 	register_mask(mask_pic);
 
@@ -628,10 +620,4 @@ int menu_init(void)
 
 	return 0;
 
-}
-
-
-void menu_deinit(void)
-{
-	dj_set_nosound(1);
 }

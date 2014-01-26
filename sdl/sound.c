@@ -148,6 +148,7 @@ static void updateSoundParams(int slot, int volume)
 
 void mix_sound(void *unused, Uint8 *stream, int len)
 {
+	UNUSED(unused);
 	/* Mix current sound data. */
 	/* Data, from raw sound, for right and left. */
 	register int sample;
@@ -305,41 +306,6 @@ void dj_deinit(void)
 	SDL_Quit();
 }
 
-void dj_start(void)
-{
-}
-
-void dj_stop(void)
-{
-}
-
-char dj_autodetect_sd(void)
-{
-	return 0;
-}
-
-char dj_set_stereo(char flag)
-{
-	return 0;
-}
-
-void dj_set_auto_mix(char flag)
-{
-}
-
-unsigned short dj_set_mixing_freq(unsigned short freq)
-{
-	return freq;
-}
-
-void dj_set_dma_time(unsigned short time)
-{
-}
-
-void dj_set_nosound(char flag)
-{
-}
-
 /* mix handling */
 
 void dj_mix(void)
@@ -363,7 +329,7 @@ void dj_set_sfx_volume(char volume)
 	SDL_UnlockAudio();
 }
 
-void dj_play_sfx(unsigned char sfx_num, unsigned short freq, char volume, char panning, unsigned short delay, char channel)
+void dj_play_sfx(unsigned char sfx_num, unsigned short freq, char volume, char channel)
 {
 	int slot;
 
@@ -423,7 +389,7 @@ void dj_stop_sfx_channel(char channel_num)
 	SDL_UnlockAudio();
 }
 
-char dj_load_sfx(unsigned char * file_handle, char *filename, int file_length, char sfx_type, unsigned char sfx_num)
+char dj_load_sfx(unsigned char * file_handle, int file_length, unsigned char sfx_num)
 {
 	unsigned int i;
 	unsigned char *src;
@@ -564,13 +530,4 @@ void dj_set_mod_volume(char volume)
 
 	Mix_VolumeMusic(volume);
 #endif
-}
-
-char dj_load_mod(unsigned char * file_handle, char *filename, char mod_num)
-{
-	return 0;
-}
-
-void dj_free_mod(char mod_num)
-{
 }

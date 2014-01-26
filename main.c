@@ -26,7 +26,9 @@
 #include "globals.h"
 #include <fcntl.h>
 #ifndef _MSC_VER
-#include <unistd.h>
+#include <sys/types.h>  
+#include <sys/stat.h>  
+#include <unistd.h>  
 #endif
 
 #ifdef USE_NET
@@ -83,7 +85,7 @@ struct {
 	struct {
 		int image;
 		int ticks;
-	} frame[10];
+	} frame[80];
 } object_anims[8] = {
 	{
 		6, 0, {
@@ -571,7 +573,7 @@ void processKillPacket(NetPacket *pkt)
 			for (c4 = 0; c4 < 10; c4++)
 				add_object(OBJ_FLESH, (x >> 16) + 6 + rnd(5), (y >> 16) + 6 + rnd(5), (rnd(65535) - 32768) * 3, (rnd(65535) - 32768) * 3, 0, 79);
 		}
-		dj_play_sfx(SFX_DEATH, (unsigned short)(SFX_DEATH_FREQ + rnd(2000) - 1000), 64, 0, 0, -1);
+		dj_play_sfx(SFX_DEATH, (unsigned short)(SFX_DEATH_FREQ + rnd(2000) - 1000), 64, -1);
 		player[c1].bumps++;
 		player[c1].bumped[c2]++;
 		s1 = player[c1].bumps % 100;
@@ -972,10 +974,10 @@ void connect_to_server(char *netarg)
 #endif /* USE_NET */
 
 
-static void flip_pixels(unsigned char *pixels)
+static void flip_pixels(char *pixels)
 {
 	int x,y;
-	unsigned char temp;
+	char temp;
 
 	assert(pixels);
 	for (y = 0; y < JNB_HEIGHT; y++) {
@@ -1025,17 +1027,13 @@ int main(int argc, char *argv[])
 		if (key_pressed(1) == 1) {
 			break;
 		}
-		if (init_level(0, pal) != 0) {
+		if (init_level(pal) != 0) {
 			deinit_level();
 			deinit_program();
 		}
 
 		memset(cur_pal, 0, 768);
 		setpalette(0, 256, cur_pal);
-
-		recalculate_gob(&rabbit_gobs, pal);
-		recalculate_gob(&object_gobs, pal);
-		recalculate_gob(&number_gobs, pal);
 
 		flippage(1);
 		register_background(background_pic, pal);
@@ -1065,9 +1063,7 @@ int main(int argc, char *argv[])
 		dj_start_mod();
 
 		if (flies_enabled)
-			dj_play_sfx(SFX_FLY, SFX_FLY_FREQ, 0, 0, 0, 4);
-
-		dj_set_nosound(0);
+			dj_play_sfx(SFX_FLY, SFX_FLY_FREQ, 0, 4);
 
 		lord_of_the_flies = bunnies_in_space = jetpack = pogostick = blood_is_thicker_than_water = 0;
 		end_loop_flag = 0;
@@ -1165,7 +1161,6 @@ int main(int argc, char *argv[])
 						pal[455] = 8;
 					}
 					register_background(background_pic, pal);
-					recalculate_gob(&object_gobs, pal);
 					last_keys[0] = 0;
 				}
 
@@ -1395,7 +1390,7 @@ int main(int argc, char *argv[])
 					dj_mix();
 
 					if (flies_enabled)
-						draw_flies(main_info.draw_page);
+						draw_flies();
 
 					draw_end();
 				}
@@ -1574,7 +1569,6 @@ int main(int argc, char *argv[])
 		dj_ready_mod(MOD_SCORES);
 		dj_set_mod_volume((char)mod_vol);
 		dj_start_mod();
-		dj_set_nosound(0);
 
 		while (key_pressed(1) == 0) {
 			if (mod_vol < 35)
@@ -1612,7 +1606,6 @@ int main(int argc, char *argv[])
 
 		fillpalette(0, 0, 0);
 
-		dj_set_nosound(1);
 		dj_stop_mod();
 
 		if (is_net)
@@ -2016,9 +2009,9 @@ void steer_players(void)
 							player[c1].jump_ready = 0;
 							player[c1].jump_abort = 1;
 							if (pogostick == 0)
-								dj_play_sfx(SFX_JUMP, (unsigned short)(SFX_JUMP_FREQ + rnd(2000) - 1000), 64, 0, 0, -1);
+								dj_play_sfx(SFX_JUMP, (unsigned short)(SFX_JUMP_FREQ + rnd(2000) - 1000), 64, -1);
 							else
-								dj_play_sfx(SFX_SPRING, (unsigned short)(SFX_SPRING_FREQ + rnd(2000) - 1000), 64, 0, 0, -1);
+								dj_play_sfx(SFX_SPRING, (unsigned short)(SFX_SPRING_FREQ + rnd(2000) - 1000), 64, -1);
 						}
 						if ((ban_map[(s2 + 7) >> 4][s1 >> 4] == BAN_VOID || ban_map[(s2 + 7) >> 4][(s1 + 15) >> 4] == BAN_VOID) && (ban_map[(s2 + 8) >> 4][s1 >> 4] == BAN_WATER || ban_map[(s2 + 8) >> 4][(s1 + 15) >> 4] == BAN_WATER)) {
 							player[c1].y_add = -196608L;
@@ -2030,9 +2023,9 @@ void steer_players(void)
 							player[c1].jump_ready = 0;
 							player[c1].jump_abort = 1;
 							if (pogostick == 0)
-								dj_play_sfx(SFX_JUMP, (unsigned short)(SFX_JUMP_FREQ + rnd(2000) - 1000), 64, 0, 0, -1);
+								dj_play_sfx(SFX_JUMP, (unsigned short)(SFX_JUMP_FREQ + rnd(2000) - 1000), 64, -1);
 							else
-								dj_play_sfx(SFX_SPRING, (unsigned short)(SFX_SPRING_FREQ + rnd(2000) - 1000), 64, 0, 0, -1);
+								dj_play_sfx(SFX_SPRING, (unsigned short)(SFX_SPRING_FREQ + rnd(2000) - 1000), 64, -1);
 						}
 					}
 					if (pogostick == 0 && (!player[c1].action_up)) {
@@ -2138,7 +2131,7 @@ void steer_players(void)
 							}
 						}
 					}
-					dj_play_sfx(SFX_SPRING, (unsigned short)(SFX_SPRING_FREQ + rnd(2000) - 1000), 64, 0, 0, -1);
+					dj_play_sfx(SFX_SPRING, (unsigned short)(SFX_SPRING_FREQ + rnd(2000) - 1000), 64, -1);
 				}
 				s1 = (player[c1].x >> 16);
 				s2 = (player[c1].y >> 16);
@@ -2166,9 +2159,9 @@ void steer_players(void)
 						if (player[c1].y_add >= 32768) {
 							add_object(OBJ_SPLASH, (player[c1].x >> 16) + 8, ((player[c1].y >> 16) & 0xfff0) + 15, 0, 0, OBJ_ANIM_SPLASH, 0);
 							if (blood_is_thicker_than_water == 0)
-								dj_play_sfx(SFX_SPLASH, (unsigned short)(SFX_SPLASH_FREQ + rnd(2000) - 1000), 64, 0, 0, -1);
+								dj_play_sfx(SFX_SPLASH, (unsigned short)(SFX_SPLASH_FREQ + rnd(2000) - 1000), 64, -1);
 							else
-								dj_play_sfx(SFX_SPLASH, (unsigned short)(SFX_SPLASH_FREQ + rnd(2000) - 5000), 64, 0, 0, -1);
+								dj_play_sfx(SFX_SPLASH, (unsigned short)(SFX_SPLASH_FREQ + rnd(2000) - 5000), 64, -1);
 						}
 					}
 					player[c1].y_add -= 1536;
@@ -2660,7 +2653,7 @@ int add_pob(int page, int x, int y, int image, gob_t *pob_data)
 }
 
 
-void draw_flies(int page)
+void draw_flies()
 {
 	int c2;
 
@@ -2686,7 +2679,7 @@ void draw_pobs(int page)
 			back_buf_ofs += pob_width(main_info.page_info[page].pobs[c1].image, main_info.page_info[page].pobs[c1].pob_data) * pob_height(main_info.page_info[page].pobs[c1].image, main_info.page_info[page].pobs[c1].pob_data) * 4;
 		else
 			back_buf_ofs += pob_width(main_info.page_info[page].pobs[c1].image, main_info.page_info[page].pobs[c1].pob_data) * pob_height(main_info.page_info[page].pobs[c1].image, main_info.page_info[page].pobs[c1].pob_data);
-		put_pob(page, main_info.page_info[page].pobs[c1].x, main_info.page_info[page].pobs[c1].y, main_info.page_info[page].pobs[c1].image, main_info.page_info[page].pobs[c1].pob_data, 1, mask_pic);
+		put_pob(page, main_info.page_info[page].pobs[c1].x, main_info.page_info[page].pobs[c1].y, main_info.page_info[page].pobs[c1].image, main_info.page_info[page].pobs[c1].pob_data, 1);
 	}
 
 }
@@ -2737,14 +2730,14 @@ void draw_leftovers(int page)
 	int c1;
 
 	for (c1 = leftovers.page[page].num_pobs - 1; c1 >= 0; c1--)
-		put_pob(page, leftovers.page[page].pobs[c1].x, leftovers.page[page].pobs[c1].y, leftovers.page[page].pobs[c1].image, leftovers.page[page].pobs[c1].pob_data, 1, mask_pic);
+		put_pob(page, leftovers.page[page].pobs[c1].x, leftovers.page[page].pobs[c1].y, leftovers.page[page].pobs[c1].image, leftovers.page[page].pobs[c1].pob_data, 1);
 
 	leftovers.page[page].num_pobs = 0;
 
 }
 
 
-int init_level(int level, char *pal)
+int init_level(char *pal)
 {
 	unsigned char *handle;
 	int c1, c2;
@@ -2831,7 +2824,6 @@ int init_level(int level, char *pal)
 
 void deinit_level(void)
 {
-	dj_set_nosound(1);
 	dj_stop_mod();
 }
 
@@ -2927,7 +2919,6 @@ int init_program(int argc, char *argv[], char *pal)
 	unsigned char *handle = (unsigned char *) NULL;
 	int c1 = 0, c2 = 0;
 	int load_flag = 0;
-	int force2, force3;
 	sfx_data fly;
 	int player_anim_data[] = {
 		1, 0, 0, 0x7fff, 0, 0, 0, 0, 0, 0,
@@ -2956,8 +2947,6 @@ int init_program(int argc, char *argv[], char *pal)
 	memset(&main_info, 0, sizeof(main_info));
 
 	strcpy(datfile_name, DATA_PATH);
-
-	force2 = force3 = 0;
 
 	if (argc > 1) {
 		for (c1 = 1; c1 < argc; c1++) {
@@ -3009,13 +2998,6 @@ int init_program(int argc, char *argv[], char *pal)
 					netarg = argv[c1 + 1];
 				}
 #endif
-			} else if (stricmp(argv[c1], "-mouse") == 0) {
-				if (c1 < (argc - 1)) {
-					if (stricmp(argv[c1 + 1], "2") == 0)
-						force2 = 1;
-					if (stricmp(argv[c1 + 1], "3") == 0)
-						force3 = 1;
-				}
 			}
 			else if (strstr(argv[1],"-v")) {
 				printf("jumpnbump %s compiled %s at %s with",JNB_VERSION,__DATE__,__TIME__);
@@ -3128,21 +3110,10 @@ all provided the user didn't choose one on the commandline. */
 	dj_init();
 
 	if (main_info.no_sound == 0) {
-		dj_autodetect_sd();
-		dj_set_mixing_freq(20000);
-		dj_set_stereo(0);
-		dj_set_auto_mix(0);
-		dj_set_dma_time(8);
 		dj_set_num_sfx_channels(5);
 		dj_set_sfx_volume(64);
-		dj_set_nosound(1);
-		dj_start();
 
 		if ((handle = dat_open("jump.mod")) == 0) {
-			strcpy(main_info.error_str, "Error loading 'jump.mod', aborting...\n");
-			return 1;
-		}
-		if (dj_load_mod(handle, 0, MOD_MENU) != 0) {
 			strcpy(main_info.error_str, "Error loading 'jump.mod', aborting...\n");
 			return 1;
 		}
@@ -3151,16 +3122,8 @@ all provided the user didn't choose one on the commandline. */
 			strcpy(main_info.error_str, "Error loading 'bump.mod', aborting...\n");
 			return 1;
 		}
-		if (dj_load_mod(handle, 0, MOD_GAME) != 0) {
-			strcpy(main_info.error_str, "Error loading 'bump.mod', aborting...\n");
-			return 1;
-		}
 
 		if ((handle = dat_open("scores.mod")) == 0) {
-			strcpy(main_info.error_str, "Error loading 'scores.mod', aborting...\n");
-			return 1;
-		}
-		if (dj_load_mod(handle, 0, MOD_SCORES) != 0) {
 			strcpy(main_info.error_str, "Error loading 'scores.mod', aborting...\n");
 			return 1;
 		}
@@ -3169,7 +3132,7 @@ all provided the user didn't choose one on the commandline. */
 			strcpy(main_info.error_str, "Error loading 'jump.smp', aborting...\n");
 			return 1;
 		}
-		if (dj_load_sfx(handle, 0, dat_filelen("jump.smp"), DJ_SFX_TYPE_SMP, SFX_JUMP) != 0) {
+		if (dj_load_sfx(handle, dat_filelen("jump.smp"), SFX_JUMP) != 0) {
 			strcpy(main_info.error_str, "Error loading 'jump.smp', aborting...\n");
 			return 1;
 		}
@@ -3178,7 +3141,7 @@ all provided the user didn't choose one on the commandline. */
 			strcpy(main_info.error_str, "Error loading 'death.smp', aborting...\n");
 			return 1;
 		}
-		if (dj_load_sfx(handle, 0, dat_filelen("death.smp"), DJ_SFX_TYPE_SMP, SFX_DEATH) != 0) {
+		if (dj_load_sfx(handle, dat_filelen("death.smp"), SFX_DEATH) != 0) {
 			strcpy(main_info.error_str, "Error loading 'death.smp', aborting...\n");
 			return 1;
 		}
@@ -3187,7 +3150,7 @@ all provided the user didn't choose one on the commandline. */
 			strcpy(main_info.error_str, "Error loading 'spring.smp', aborting...\n");
 			return 1;
 		}
-		if (dj_load_sfx(handle, 0, dat_filelen("spring.smp"), DJ_SFX_TYPE_SMP, SFX_SPRING) != 0) {
+		if (dj_load_sfx(handle, dat_filelen("spring.smp"), SFX_SPRING) != 0) {
 			strcpy(main_info.error_str, "Error loading 'spring.smp', aborting...\n");
 			return 1;
 		}
@@ -3196,7 +3159,7 @@ all provided the user didn't choose one on the commandline. */
 			strcpy(main_info.error_str, "Error loading 'splash.smp', aborting...\n");
 			return 1;
 		}
-		if (dj_load_sfx(handle, 0, dat_filelen("splash.smp"), DJ_SFX_TYPE_SMP, SFX_SPLASH) != 0) {
+		if (dj_load_sfx(handle, dat_filelen("splash.smp"), SFX_SPLASH) != 0) {
 			strcpy(main_info.error_str, "Error loading 'splash.smp', aborting...\n");
 			return 1;
 		}
@@ -3205,7 +3168,7 @@ all provided the user didn't choose one on the commandline. */
 			strcpy(main_info.error_str, "Error loading 'fly.smp', aborting...\n");
 			return 1;
 		}
-		if (dj_load_sfx(handle, 0, dat_filelen("fly.smp"), DJ_SFX_TYPE_SMP, SFX_FLY) != 0) {
+		if (dj_load_sfx(handle, dat_filelen("fly.smp"), SFX_FLY) != 0) {
 			strcpy(main_info.error_str, "Error loading 'fly.smp', aborting...\n");
 			return 1;
 		}
@@ -3236,8 +3199,6 @@ all provided the user didn't choose one on the commandline. */
 	setpalette(0, 256, pal);
 
 	init_inputs();
-
-	recalculate_gob(&font_gobs, pal);
 
 	if (main_info.joy_enabled == 1 && main_info.fireworks == 0) {
 		load_flag = 0;
@@ -3326,9 +3287,6 @@ void deinit_program(void)
 	__dpmi_regs regs;
 #endif
 
-	dj_stop();
-	dj_free_mod(MOD_MENU);
-	dj_free_mod(MOD_GAME);
 	dj_free_sfx(SFX_DEATH);
 	dj_free_sfx(SFX_SPRING);
 	dj_free_sfx(SFX_SPLASH);
@@ -3348,7 +3306,7 @@ void deinit_program(void)
 #endif
 
 	if (main_info.error_str[0] != 0) {
-		printf(main_info.error_str);
+		puts(main_info.error_str);
 #ifdef _MSC_VER
 		MessageBox(0, main_info.error_str, "Jump'n'Bump", 0);
 #endif
@@ -3496,7 +3454,8 @@ void write_calib_data(void)
 	len = filelength(fileno(handle));
 	if ((mem = malloc(len)) == NULL)
 		return;
-	fread(mem, 1, len, handle);
+	if (fread(mem, 1, len, handle) != len)
+		return;
 	fclose(handle);
 
 	ofs = 4;

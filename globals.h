@@ -145,6 +145,8 @@ extern int ai[JNB_MAX_PLAYERS];
 
 #define	DATA_PATH "jumpbump.dat"
 
+#define UNUSED(x) (void)(x)
+
 typedef struct {
 	int num_images;
 	int *width;
@@ -241,19 +243,20 @@ void fireworks(void);
 
 /* main.c */
 
+unsigned char *dat_open(char *file_name);
 void steer_players(void);
 void position_player(int player_num);
 void fireworks(void);
 void add_object(int type, int x, int y, int x_add, int y_add, int anim, int frame);
 void update_objects(void);
 int add_pob(int page, int x, int y, int image, gob_t *pob_data);
-void draw_flies(int page);
+void draw_flies();
 void draw_pobs(int page);
 void redraw_flies_background(int page);
 void redraw_pob_backgrounds(int page);
 int add_leftovers(int page, int x, int y, int image, gob_t *pob_data);
 void draw_leftovers(int page);
-int init_level(int level, char *pal);
+int init_level(char *pal);
 void deinit_level(void);
 int init_program(int argc, char *argv[], char *pal);
 void deinit_program(void);
@@ -268,7 +271,7 @@ void write_calib_data(void);
 
 void update_player_actions(void);
 void init_inputs(void);
-int calib_joy(int type);
+int calib_joy();
 
 /* menu.c */
 
@@ -279,9 +282,11 @@ void menu_deinit(void);
 
 /* gfx.c */
 
+void exit_fullscreen();
+void fs_toggle();
 void set_scaling(int scale);
 void open_screen(void);
-void wait_vrt(int mix);
+void wait_vrt();
 void draw_begin(void);
 void draw_end(void);
 void flippage(int page);
@@ -301,7 +306,7 @@ void get_block(int page, int x, int y, int width, int height, void *buffer);
 void put_block(int page, int x, int y, int width, int height, void *buffer);
 #endif
 void put_text(int page, int x, int y, char *text, int align);
-void put_pob(int page, int x, int y, int image, gob_t *gob, int mask, void *mask_pic);
+void put_pob(int page, int x, int y, int image, gob_t *gob, int mask);
 int pob_width(int image, gob_t *gob);
 int pob_height(int image, gob_t *gob);
 int pob_hs_x(int image, gob_t *gob);
@@ -309,7 +314,6 @@ int pob_hs_y(int image, gob_t *gob);
 int read_pcx(unsigned char * handle, void *buffer, int buf_len, char *pal);
 void register_background(char *pixels, char pal[768]);
 int register_gob(unsigned char *handle, gob_t *gob, int len);
-void recalculate_gob(gob_t *gob, char pal[768]);
 void register_mask(void *pixels);
 
 /* gfx.c */
@@ -325,6 +329,7 @@ int intr_sysupdate();
 
 extern char last_keys[50];
 
+int intr_sysupdate();
 int hook_keyb_handler(void);
 void remove_keyb_handler(void);
 int key_pressed(int key);

@@ -232,7 +232,7 @@ void exit_fullscreen()
 		fs_toggle();
 }
 
-void wait_vrt(int mix)
+void wait_vrt()
 {
 	return;
 }
@@ -633,13 +633,13 @@ void put_text(int page, int x, int y, char *text, int align)
 
 		else
 			continue;
-		put_pob(page, cur_x, y, image, &font_gobs, 1, mask_pic);
+		put_pob(page, cur_x, y, image, &font_gobs, 1);
 		cur_x += pob_width(image, &font_gobs) + 1;
 	}
 }
 
 
-void put_pob(int page, int x, int y, int image, gob_t *gob, int use_mask, void *mask_pic)
+void put_pob(int page, int x, int y, int image, gob_t *gob, int use_mask)
 {
 	int c1, c2;
 	int pob_x, pob_y;
@@ -847,11 +847,6 @@ int register_gob(unsigned char *handle, gob_t *gob, int len)
 	}
 	free(gob_data);
 	return 0;
-}
-
-
-void recalculate_gob(gob_t *gob, char pal[768])
-{
 }
 
 void register_mask(void *pixels)
