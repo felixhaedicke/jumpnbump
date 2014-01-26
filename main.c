@@ -32,7 +32,7 @@
 #endif
 
 #ifdef USE_NET
-#include "SDL_net.h"
+#include <SDL_net.h>
 #endif /* USE_NET */
 
 #ifndef M_PI

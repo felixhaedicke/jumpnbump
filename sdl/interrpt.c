@@ -32,8 +32,8 @@
 #include "globals.h"
 
 #ifdef USE_KAILLERA
-#include "SDL_thread.h"
-#include "SDL_mutex.h"
+#include <SDL_thread.h>
+#include <SDL_mutex.h>
 #include <kailleraclient.h>
 
 char local_keyb[256];

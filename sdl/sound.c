@@ -30,10 +30,10 @@
 #ifndef _MSC_VER
 #include <unistd.h>
 #endif
-#include "SDL.h"
+#include <SDL.h>
 
 #ifndef NO_SDL_MIXER
-#include "SDL_mixer.h"
+#include <SDL_mixer.h>
 
 static Mix_Music *current_music = (Mix_Music *) NULL;
 #endif
