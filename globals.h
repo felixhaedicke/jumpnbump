@@ -91,9 +91,9 @@ extern int ai[JNB_MAX_PLAYERS];
 #define KEY_PL3_LEFT SDLK_j
 #define KEY_PL3_RIGHT	SDLK_l
 #define KEY_PL3_JUMP SDLK_i
-#define KEY_PL4_LEFT SDLK_KP4
-#define KEY_PL4_RIGHT	SDLK_KP6
-#define KEY_PL4_JUMP SDLK_KP8
+#define KEY_PL4_LEFT SDLK_KP_4
+#define KEY_PL4_RIGHT	SDLK_KP_6
+#define KEY_PL4_JUMP SDLK_KP_8
 
 #define NUM_POBS 200
 #define NUM_OBJECTS 200

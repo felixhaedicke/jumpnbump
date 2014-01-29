@@ -42,7 +42,8 @@ int screen_pitch=400;
 int scale_up=0;
 int dirty_block_shift=4;
 
-static SDL_Surface *jnb_surface;
+static SDL_Window *jnb_window = NULL;
+static SDL_Surface *jnb_surface = NULL;
 static int fullscreen = 0;
 static int vinited = 0;
 static void *screen_buffer[2];
@@ -93,7 +94,7 @@ static SDL_Surface *load_xpm_from_array(char **xpm)
 	if (!surface)
 		return NULL;
 
-	SDL_SetColorKey(surface, SDL_SRCCOLORKEY, SDL_MapRGBA(surface->format, 0, 0, 0, 0));
+	SDL_SetColorKey(surface, SDL_TRUE, SDL_MapRGBA(surface->format, 0, 0, 0, 0));
 	while (colors--) {
 		p = *xpm++;
 
@@ -168,7 +169,7 @@ void set_scaling(int scale)
 void open_screen(void)
 {
 	int lval = 0;
-	int flags;
+	int flags = 0;
 
 	lval = SDL_Init(SDL_INIT_TIMER | SDL_INIT_AUDIO | SDL_INIT_VIDEO | SDL_INIT_JOYSTICK);
 	if (lval < 0) {
@@ -176,28 +177,47 @@ void open_screen(void)
 		exit(EXIT_FAILURE);
 	}
 
-	flags = SDL_SWSURFACE;
 	if (fullscreen)
-		flags |= SDL_FULLSCREEN;
-	jnb_surface = SDL_SetVideoMode(screen_width, screen_height, 8, flags);
+		flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
 
+	jnb_window = SDL_CreateWindow("Jump'n'Bump",
+			SDL_WINDOWPOS_UNDEFINED,
+			SDL_WINDOWPOS_UNDEFINED,
+			screen_width,
+			screen_height,
+			flags);
+	if (!jnb_window) {
+		fprintf(stderr, "SDL ERROR: %s\n", SDL_GetError());
+		exit(EXIT_FAILURE);
+	}
+
+	int bpp;
+	Uint32 rmask, gmask, bmask, amask;
+	SDL_PixelFormatEnumToMasks(SDL_PIXELFORMAT_INDEX8, &bpp, &rmask, &gmask, &bmask, &amask);
+	jnb_surface = SDL_CreateRGBSurface(0,
+			screen_width,
+			screen_height,
+			bpp,
+			rmask,
+			gmask,
+			bmask,
+			amask);
 	if (!jnb_surface) {
 		fprintf(stderr, "SDL ERROR: %s\n", SDL_GetError());
 		exit(EXIT_FAILURE);
 	}
+		
 
 	if(fullscreen)
 		SDL_ShowCursor(0);
 	else
 		SDL_ShowCursor(1);
 
-	SDL_WM_SetCaption("Jump'n'Bump","");
-
 	icon=load_xpm_from_array(jumpnbump_xpm);
 	if (icon==NULL) {
 	    printf("Couldn't load icon\n");
 	} else {
-	    SDL_WM_SetIcon(icon,NULL);
+	    SDL_SetWindowIcon(jnb_window,icon);
 	}
 
 	vinited = 1;
@@ -206,11 +226,6 @@ void open_screen(void)
 
 	screen_buffer[0]=malloc(screen_width*screen_height);
 	screen_buffer[1]=malloc(screen_width*screen_height);
-
-/*
-	dirty_blocks[0]=malloc(sizeof(int)*25*16+1000);
-	dirty_blocks[1]=malloc(sizeof(int)*25*16+1000);
-*/
 
 	return;
 }
@@ -222,7 +237,8 @@ void fs_toggle()
 		fullscreen ^= 1;
 		return;
 	}
-	if (SDL_WM_ToggleFullScreen(jnb_surface))
+	Uint32 fullscreen_flags = fullscreen ? SDL_WINDOW_FULLSCREEN : 0;
+	if (SDL_SetWindowFullscreen(jnb_window,fullscreen_flags))
 		fullscreen ^= 1;
 }
 
@@ -331,15 +347,6 @@ void flippage(int page)
 	assert(drawing_enable==0);
 
 	SDL_LockSurface(jnb_surface);
-	if (!jnb_surface->pixels) {
-		
-		for (x=0; x<(25*16); x++) {
-			dirty_blocks[0][x] = 1;
-			dirty_blocks[1][x] = 1;
-		}
-
-		return;
-	}
 	dest=(unsigned char *)jnb_surface->pixels;
 	src=screen_buffer[page];
 	for (y=0; y<screen_height; y++) {
@@ -362,8 +369,11 @@ void flippage(int page)
 		}
 	}
 	memset(&dirty_blocks[page], 0, sizeof(int)*25*16);
-        SDL_UnlockSurface(jnb_surface);
-	SDL_Flip(jnb_surface);
+	SDL_UnlockSurface(jnb_surface);
+	
+	SDL_Surface *window_surface = SDL_GetWindowSurface(jnb_window);
+	SDL_BlitSurface(jnb_surface, NULL, window_surface, NULL);
+	SDL_UpdateWindowSurface(jnb_window);
 }
 
 
@@ -405,7 +415,7 @@ void setpalette(int index, int count, char *palette)
 		colors[i+index].g = palette[i * 3 + 1] << 2;
 		colors[i+index].b = palette[i * 3 + 2] << 2;
 	}
-	SDL_SetColors(jnb_surface, &colors[index], index, count);
+	SDL_SetPaletteColors(jnb_surface->format->palette, &colors[index], index, count);
 }
 
 
@@ -421,7 +431,7 @@ void fillpalette(int red, int green, int blue)
 		colors[i].g = green << 2;
 		colors[i].b = blue << 2;
 	}
-	SDL_SetColors(jnb_surface, colors, 0, 256);
+	SDL_SetPaletteColors(jnb_surface->format->palette, colors, 0, 256);
 }
 
 

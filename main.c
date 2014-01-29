@@ -1736,7 +1736,7 @@ void cpu_move(void)
 			/** Artificial intelligence done, now apply movements */
 			if(lm)
 				{
-				SDLKey key;
+				SDL_Keycode key;
 				if(i == 0)
 					key = KEY_PL1_LEFT;
 				else if(i == 1)
@@ -1751,7 +1751,7 @@ void cpu_move(void)
 				}
 			else
 				{
-				SDLKey key;
+				SDL_Keycode key;
 				if(i == 0)
 					key = KEY_PL1_LEFT;
 				else if(i == 1)
@@ -1767,7 +1767,7 @@ void cpu_move(void)
 
 			if(rm)
 				{
-				SDLKey key;
+				SDL_Keycode key;
 				if(i == 0)
 					key = KEY_PL1_RIGHT;
 				else if(i == 1)
@@ -1782,7 +1782,7 @@ void cpu_move(void)
 				}
 			else
 				{
-				SDLKey key;
+				SDL_Keycode key;
 				if(i == 0)
 					key = KEY_PL1_RIGHT;
 				else if(i == 1)
@@ -1798,7 +1798,7 @@ void cpu_move(void)
 
 			if(jm)
 				{
-				SDLKey key;
+				SDL_Keycode key;
 				if(i == 0)
 					key = KEY_PL1_JUMP;
 				else if(i == 1)
@@ -1813,7 +1813,7 @@ void cpu_move(void)
 				}
 			else
 				{
-				SDLKey key;
+				SDL_Keycode key;
 				if(i == 0)
 					key = KEY_PL1_JUMP;
 				else if(i == 1)

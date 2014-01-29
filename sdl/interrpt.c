@@ -240,7 +240,6 @@ int update_kaillera_keys(void)
 
 int hook_keyb_handler(void)
 {
-	SDL_EnableUNICODE(1);
 	memset((void *) last_keys, 0, sizeof(last_keys));
 
 	start_kaillera_thread();
@@ -286,7 +285,6 @@ void remove_keyb_handler(void)
 
 int hook_keyb_handler(void)
 {
-	SDL_EnableUNICODE(1);
 	memset((void *) last_keys, 0, sizeof(last_keys));
 
 	return 0;
@@ -329,7 +327,7 @@ int intr_sysupdate()
 
 			if(e.button.button == SDL_BUTTON_LEFT)
 				{
-				SDLKey sym = KEY_PL3_LEFT;
+				SDL_Keycode sym = KEY_PL3_LEFT;
 				sym &= 0x7f;
 				if(e.button.state == SDL_RELEASED)
 					{
@@ -342,7 +340,7 @@ int intr_sysupdate()
 				}
 			else if(e.button.button == SDL_BUTTON_RIGHT)
 				{
-				SDLKey sym = KEY_PL3_RIGHT;
+				SDL_Keycode sym = KEY_PL3_RIGHT;
 				sym &= 0x7f;
 				if (e.button.state == SDL_RELEASED)
 					{
