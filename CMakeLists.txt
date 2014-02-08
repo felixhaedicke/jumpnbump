@@ -3,7 +3,6 @@ cmake_minimum_required(VERSION 2.8)
 include(FindPkgConfig)
 aux_source_directory(. SRC_LIST)
 aux_source_directory(sdl SRC_LIST)
-add_executable(${PROJECT_NAME} ${SRC_LIST})
 pkg_check_modules(SDL REQUIRED sdl2)
 pkg_check_modules(SDL_MIXER REQUIRED SDL2_mixer)
 include_directories(SYSTEM . ${SDL_INCLUDE_DIRS} ${SDL_MIXER_INCLUDE_DIRS})
@@ -40,7 +39,12 @@ add_custom_command(OUTPUT jumpbump.dat
 		numbers.gob
 		objects.gob
 		rabbit.gob
+		font.gob
+	DEPENDS
+		numbers.gob
+		objects.gob
+		rabbit.gob
 		font.gob)
-add_custom_target(jumpbump_dat ALL DEPENDS numbers.gob objects.gob rabbit.gob font.gob ${CMAKE_CURRENT_BINARY_DIR}/jumpbump.dat)
+add_executable(${PROJECT_NAME} ${SRC_LIST} jumpbump.dat)
 target_link_libraries(${PROJECT_NAME} m ${SDL_LIBRARIES} ${SDL_MIXER_LIBRARIES})
 
