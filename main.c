@@ -2964,10 +2964,8 @@ int init_program(int argc, char *argv[], char *pal)
 				main_info.joy_enabled = 0;
 			else if (stricmp(argv[c1], "-fireworks") == 0)
 				main_info.fireworks = 1;
-#ifdef USE_SDL
 			else if (stricmp(argv[c1], "-fullscreen") == 0)
 				fs_toggle();
-#endif
 			else if (stricmp(argv[c1], "-scaleup") == 0)
 				set_scaling(1);
 			else if (stricmp(argv[c1], "-mirror") == 0)
