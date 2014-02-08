@@ -2042,7 +2042,9 @@ void steer_players(void)
 				} else {
 
 					if (player[c1].action_up) {
-						player[c1].y_add -= 16384;
+						if (player[c1].y > -25600000L) {
+							player[c1].y_add -= 16384;
+						}
 						if (player[c1].y_add < -400000L)
 							player[c1].y_add = -400000L;
 						if ((ban_map[(s2 + 7) >> 4][s1 >> 4] == BAN_VOID || ban_map[(s2 + 7) >> 4][(s1 + 15) >> 4] == BAN_VOID) && (ban_map[(s2 + 8) >> 4][s1 >> 4] == BAN_WATER || ban_map[(s2 + 8) >> 4][(s1 + 15) >> 4] == BAN_WATER))
