@@ -43,7 +43,9 @@ int scale_up=0;
 int dirty_block_shift=4;
 
 static SDL_Window *jnb_window = NULL;
-static SDL_Surface *jnb_surface = NULL;
+static SDL_Renderer *jnb_renderer = NULL;
+static SDL_PixelFormat *jnb_pixelformat = NULL;
+static SDL_Texture *jnb_texture = NULL;
 static int fullscreen = 0;
 static int vinited = 0;
 static void *screen_buffer[2];
@@ -191,22 +193,33 @@ void open_screen(void)
 		exit(EXIT_FAILURE);
 	}
 
-	int bpp;
-	Uint32 rmask, gmask, bmask, amask;
-	SDL_PixelFormatEnumToMasks(SDL_PIXELFORMAT_INDEX8, &bpp, &rmask, &gmask, &bmask, &amask);
-	jnb_surface = SDL_CreateRGBSurface(0,
-			screen_width,
-			screen_height,
-			bpp,
-			rmask,
-			gmask,
-			bmask,
-			amask);
-	if (!jnb_surface) {
+	jnb_renderer = SDL_CreateRenderer(jnb_window, -1, SDL_RENDERER_ACCELERATED);
+	if (!jnb_renderer) {
 		fprintf(stderr, "SDL ERROR: %s\n", SDL_GetError());
 		exit(EXIT_FAILURE);
 	}
-		
+
+	jnb_pixelformat = SDL_AllocFormat(SDL_PIXELFORMAT_INDEX8);
+	if (jnb_pixelformat == NULL) {
+		fprintf(stderr, "SDL ERROR: %s\n", SDL_GetError());
+		exit(EXIT_FAILURE);
+	}
+
+	jnb_pixelformat->palette = SDL_AllocPalette(256);
+	if (jnb_pixelformat->palette == NULL) {
+		fprintf(stderr, "SDL ERROR: %s\n", SDL_GetError());
+		exit(EXIT_FAILURE);
+	}
+
+	jnb_texture = SDL_CreateTexture(jnb_renderer,
+				SDL_PIXELFORMAT_UNKNOWN,
+				SDL_TEXTUREACCESS_STREAMING,
+				screen_width,
+				screen_height);
+	if (jnb_texture == NULL) {
+		fprintf(stderr, "SDL ERROR: %s\n", SDL_GetError());
+		exit(EXIT_FAILURE);
+	}
 
 	if(fullscreen)
 		SDL_ShowCursor(0);
@@ -215,9 +228,9 @@ void open_screen(void)
 
 	icon=load_xpm_from_array(jumpnbump_xpm);
 	if (icon==NULL) {
-	    printf("Couldn't load icon\n");
+		printf("Couldn't load icon\n");
 	} else {
-	    SDL_SetWindowIcon(jnb_window,icon);
+		SDL_SetWindowIcon(jnb_window,icon);
 	}
 
 	vinited = 1;
@@ -237,7 +250,7 @@ void fs_toggle()
 		fullscreen ^= 1;
 		return;
 	}
-	Uint32 fullscreen_flags = fullscreen ? SDL_WINDOW_FULLSCREEN : 0;
+	Uint32 fullscreen_flags = fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0;
 	if (SDL_SetWindowFullscreen(jnb_window,fullscreen_flags))
 		fullscreen ^= 1;
 }
@@ -300,7 +313,7 @@ int get_color(int color, char pal[768])
 {
 	assert(color<256);
 	assert(pal);
-	return SDL_MapRGB(jnb_surface->format, (Uint8)(pal[color*3+0]<<2), (Uint8)(pal[color*3+1]<<2), (Uint8)(pal[color*3+2]<<2));
+	return SDL_MapRGB(jnb_pixelformat, (Uint8)(pal[color*3+0]<<2), (Uint8)(pal[color*3+1]<<2), (Uint8)(pal[color*3+2]<<2));
 }
 
 
@@ -340,14 +353,13 @@ void set_pixel(int page, int x, int y, int color)
 
 void flippage(int page)
 {
-	int x,y;
+	int x,y,pitch;
 	unsigned char *src;
 	unsigned char *dest;
 
 	assert(drawing_enable==0);
 
-	SDL_LockSurface(jnb_surface);
-	dest=(unsigned char *)jnb_surface->pixels;
+	SDL_LockTexture(jnb_texture, NULL, (void **)&dest, &pitch);
 	src=screen_buffer[page];
 	for (y=0; y<screen_height; y++) {
 		for (x=0; x<25; x++) {
@@ -361,19 +373,23 @@ void flippage(int page)
 				test_x++;
 			}
 			if (count) {
-				memcpy(	&dest[y*jnb_surface->pitch+(x<<dirty_block_shift)],
-					&src[y*screen_pitch+((x<<dirty_block_shift))],
-					((16<<dirty_block_shift)>>4)*count);
+				SDL_Color* colors = jnb_pixelformat->palette->colors;
+				unsigned int i;
+				for (i = 0; i < (((16<<dirty_block_shift)>>4)*count); ++i) {
+					SDL_Color color = colors[src[(y*screen_pitch+((x<<dirty_block_shift)))+i]];
+					dest[((y*pitch/4+(x<<dirty_block_shift))+i)*4] = color.b;
+					dest[((y*pitch/4+(x<<dirty_block_shift))+i)*4+1] = color.g;
+					dest[((y*pitch/4+(x<<dirty_block_shift))+i)*4+2] = color.r;
+				}
 			}
 			x = test_x;
 		}
 	}
 	memset(&dirty_blocks[page], 0, sizeof(int)*25*16);
-	SDL_UnlockSurface(jnb_surface);
-	
-	SDL_Surface *window_surface = SDL_GetWindowSurface(jnb_window);
-	SDL_BlitSurface(jnb_surface, NULL, window_surface, NULL);
-	SDL_UpdateWindowSurface(jnb_window);
+	SDL_UnlockTexture(jnb_texture);
+	SDL_RenderCopy(jnb_renderer, jnb_texture, NULL, NULL);
+
+	SDL_RenderPresent(jnb_renderer);
 }
 
 
@@ -415,7 +431,8 @@ void setpalette(int index, int count, char *palette)
 		colors[i+index].g = palette[i * 3 + 1] << 2;
 		colors[i+index].b = palette[i * 3 + 2] << 2;
 	}
-	SDL_SetPaletteColors(jnb_surface->format->palette, &colors[index], index, count);
+	SDL_SetPaletteColors(jnb_pixelformat->palette, &colors[index], index, count);
+	memset(dirty_blocks, 1, sizeof(dirty_blocks));
 }
 
 
@@ -431,7 +448,7 @@ void fillpalette(int red, int green, int blue)
 		colors[i].g = green << 2;
 		colors[i].b = blue << 2;
 	}
-	SDL_SetPaletteColors(jnb_surface->format->palette, colors, 0, 256);
+	SDL_SetPaletteColors(jnb_pixelformat->palette, colors, 0, 256);
 }
 
 
