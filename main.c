@@ -2966,8 +2966,8 @@ int init_program(int argc, char *argv[], char *pal)
 				main_info.fireworks = 1;
 			else if (stricmp(argv[c1], "-fullscreen") == 0)
 				fs_toggle();
-			else if (stricmp(argv[c1], "-scaleup") == 0)
-				set_scaling(1);
+			else if (stricmp(argv[c1], "-noscaleup") == 0)
+				set_scaling(0);
 			else if (stricmp(argv[c1], "-mirror") == 0)
 				flip = 1;
 			else if (stricmp(argv[c1], "-dat") == 0) {
@@ -3024,7 +3024,7 @@ int init_program(int argc, char *argv[], char *pal)
 				printf("  -nogore                  play without blood\n");
 				printf("  -noflies                 disable flies\n");
 				printf("  -mirror                  play with mirrored level\n");
-				printf("  -scaleup                 play with doubled resolution (800x512)\n");
+				printf("  -noscaleup               play with original resolution (400x256)\n");
 				printf("  -musicnosound            play with music but without sound\n");
 				printf("\n");
 				return 1;

@@ -36,11 +36,11 @@
 #endif
 SDL_Surface *icon;
 
-int screen_width=400;
-int screen_height=256;
-int screen_pitch=400;
-int scale_up=0;
-int dirty_block_shift=4;
+int screen_width=800;
+int screen_height=512;
+int screen_pitch=800;
+int scale_up=1;
+int dirty_block_shift=5;
 
 static SDL_Window *jnb_window = NULL;
 static SDL_Renderer *jnb_renderer = NULL;
