@@ -256,8 +256,8 @@ void fs_toggle()
 		fullscreen ^= 1;
 		return;
 	}
-	Uint32 fullscreen_flags = fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0;
-	if (SDL_SetWindowFullscreen(jnb_window,fullscreen_flags))
+	Uint32 fullscreen_flags = fullscreen ? 0: SDL_WINDOW_FULLSCREEN_DESKTOP;
+	if (SDL_SetWindowFullscreen(jnb_window,fullscreen_flags) == 0)
 		fullscreen ^= 1;
 }
 
