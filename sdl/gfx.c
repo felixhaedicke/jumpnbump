@@ -171,7 +171,7 @@ void set_scaling(int scale)
 void open_screen(void)
 {
 	int lval = 0;
-	int flags = 0;
+	int flags = SDL_WINDOW_RESIZABLE;
 
 	lval = SDL_Init(SDL_INIT_TIMER | SDL_INIT_AUDIO | SDL_INIT_VIDEO | SDL_INIT_JOYSTICK);
 	if (lval < 0) {
