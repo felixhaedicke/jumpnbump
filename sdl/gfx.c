@@ -200,6 +200,11 @@ void open_screen(void)
 		exit(EXIT_FAILURE);
 	}
 
+	SDL_RendererInfo renderer_info;
+	if (SDL_GetRendererInfo(jnb_renderer, &renderer_info) == 0) {
+		printf("Using SDL renderer %s\n", renderer_info.name);
+	}
+
 	jnb_pixelformat = SDL_AllocFormat(SDL_PIXELFORMAT_INDEX8);
 	if (jnb_pixelformat == NULL) {
 		fprintf(stderr, "SDL ERROR: %s\n", SDL_GetError());
