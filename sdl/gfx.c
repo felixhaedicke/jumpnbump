@@ -181,6 +181,7 @@ void open_screen(void)
 
 	if (fullscreen)
 		flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "best");
 
 	jnb_window = SDL_CreateWindow("Jump'n'Bump",
 			SDL_WINDOWPOS_UNDEFINED,
