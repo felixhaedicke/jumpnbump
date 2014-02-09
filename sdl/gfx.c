@@ -366,6 +366,7 @@ void flippage(int page)
 	assert(drawing_enable==0);
 
 	SDL_LockTexture(jnb_texture, NULL, (void **)&dest, &pitch);
+	int bytes_per_pixel = pitch / screen_width;
 	src=screen_buffer[page];
 	for (y=0; y<screen_height; y++) {
 		for (x=0; x<25; x++) {
@@ -383,9 +384,17 @@ void flippage(int page)
 				unsigned int i;
 				for (i = 0; i < (((16<<dirty_block_shift)>>4)*count); ++i) {
 					SDL_Color color = colors[src[(y*screen_pitch+((x<<dirty_block_shift)))+i]];
-					dest[((y*pitch/4+(x<<dirty_block_shift))+i)*4] = color.b;
-					dest[((y*pitch/4+(x<<dirty_block_shift))+i)*4+1] = color.g;
-					dest[((y*pitch/4+(x<<dirty_block_shift))+i)*4+2] = color.r;
+					if (bytes_per_pixel == 4) {
+						dest[((y*pitch/4+(x<<dirty_block_shift))+i)*4] = color.b;
+						dest[((y*pitch/4+(x<<dirty_block_shift))+i)*4+1] = color.g;
+						dest[((y*pitch/4+(x<<dirty_block_shift))+i)*4+2] = color.r;
+					} else if (bytes_per_pixel == 2) {
+						dest[((y*pitch/2+(x<<dirty_block_shift))+i)*2] = (color.b >> 4) | ((color.g >> 4) << 4);
+						dest[((y*pitch/2+(x<<dirty_block_shift))+i)*2+1] = color.r >> 4;
+					} else {
+						printf("%d bytes per pixel not supported", bytes_per_pixel);
+						exit(1);
+					}
 				}
 			}
 			x = test_x;
