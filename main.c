@@ -2964,7 +2964,7 @@ int init_program(int argc, char *argv[], char *pal)
 				main_info.joy_enabled = 0;
 			else if (stricmp(argv[c1], "-fireworks") == 0)
 				main_info.fireworks = 1;
-			else if (stricmp(argv[c1], "-fullscreen") == 0)
+			else if (stricmp(argv[c1], "-window") == 0)
 				fs_toggle();
 			else if (stricmp(argv[c1], "-noscaleup") == 0)
 				set_scaling(0);
@@ -3019,7 +3019,7 @@ int init_program(int argc, char *argv[], char *pal)
 #endif
 				printf("  -player num              set main player to num (0-3). Needed for networking\n");
 				printf("  -fireworks               screensaver mode\n");
-				printf("  -fullscreen              run in fullscreen mode\n");
+				printf("  -window                  run in window mode, not fullscreen\n");
 				printf("  -nosound                 play without sound\n");
 				printf("  -nogore                  play without blood\n");
 				printf("  -noflies                 disable flies\n");

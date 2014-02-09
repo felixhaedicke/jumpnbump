@@ -46,7 +46,7 @@ static SDL_Window *jnb_window = NULL;
 static SDL_Renderer *jnb_renderer = NULL;
 static SDL_PixelFormat *jnb_pixelformat = NULL;
 static SDL_Texture *jnb_texture = NULL;
-static int fullscreen = 0;
+static int fullscreen = 1;
 static int vinited = 0;
 static void *screen_buffer[2];
 static int drawing_enable = 0;
