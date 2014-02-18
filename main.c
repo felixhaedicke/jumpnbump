@@ -31,6 +31,9 @@
 #include <unistd.h>  
 #endif
 
+#include <SDL.h>
+#include <SDL_main.h>
+
 #ifdef USE_NET
 #include <SDL_net.h>
 #endif /* USE_NET */
