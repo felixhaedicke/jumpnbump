@@ -254,8 +254,10 @@ void mix_sound(void *unused, Uint8 *stream, int len)
 
 char dj_init(void)
 {
+#ifndef NO_SDL_MIXER
 	Uint16 audio_format = MIX_DEFAULT_FORMAT;
 	int audio_channels = 2;
+#endif
 	int audio_buffers = 4096;
 
 	open_screen();

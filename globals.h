@@ -50,7 +50,9 @@ extern "C" {
 #endif
 
 #include <SDL.h>
+#ifndef NO_SDL_MIXER
 #include <SDL_mixer.h>
+#endif
 
 #ifndef WIN32
 #  define stricmp strcasecmp
