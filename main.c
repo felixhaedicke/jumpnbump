@@ -2923,7 +2923,6 @@ int init_program(int argc, char *argv[], char *pal)
 #endif
 	unsigned char *handle = (unsigned char *) NULL;
 	int c1 = 0, c2 = 0;
-	int load_flag = 0;
 	sfx_data fly;
 	int player_anim_data[] = {
 		1, 0, 0, 0x7fff, 0, 0, 0, 0, 0, 0,
@@ -3201,74 +3200,7 @@ all provided the user didn't choose one on the commandline. */
 
 	setpalette(0, 256, pal);
 
-	init_inputs();
-
-	if (main_info.joy_enabled == 1 && main_info.fireworks == 0) {
-		load_flag = 0;
-		put_text(0, 200, 40, "JOYSTICK CALIBRATION", 2);
-		put_text(0, 200, 100, "Move the joystick to the", 2);
-		put_text(0, 200, 115, "UPPER LEFT", 2);
-		put_text(0, 200, 130, "and press button A", 2);
-		put_text(0, 200, 200, "Or press ESC to use", 2);
-		put_text(0, 200, 215, "previous settings", 2);
-		if (calib_joy(0) != 0)
-			load_flag = 1;
-		else {
-			register_background(NULL, NULL);
-
-			main_info.view_page = 1;
-			flippage(1);
-
-			wait_vrt(0);
-
-			put_text(1, 200, 40, "JOYSTICK CALIBRATION", 2);
-			put_text(1, 200, 100, "Move the joystick to the", 2);
-			put_text(1, 200, 115, "LOWER RIGHT", 2);
-			put_text(1, 200, 130, "and press button A", 2);
-			put_text(1, 200, 200, "Or press ESC to use", 2);
-			put_text(1, 200, 215, "previous settings", 2);
-			if (calib_joy(1) != 0)
-				load_flag = 1;
-			else {
-				register_background(NULL, NULL);
-				flippage(0);
-
-				wait_vrt(0);
-
-				put_text(0, 200, 40, "JOYSTICK CALIBRATION", 2);
-				put_text(0, 200, 100, "Move the joystick to the", 2);
-				put_text(0, 200, 115, "CENTER", 2);
-				put_text(0, 200, 130, "and press button A", 2);
-				put_text(0, 200, 200, "Or press ESC to use", 2);
-				put_text(0, 200, 215, "previous settings", 2);
-				if (calib_joy(2) != 0)
-					load_flag = 1;
-				else {
-					if (joy.calib_data.x1 == joy.calib_data.x2)
-						joy.calib_data.x1 -= 10;
-					if (joy.calib_data.x3 == joy.calib_data.x2)
-						joy.calib_data.x3 += 10;
-					if (joy.calib_data.y1 == joy.calib_data.y2)
-						joy.calib_data.y1 -= 10;
-					if (joy.calib_data.y3 == joy.calib_data.y2)
-						joy.calib_data.y3 += 10;
-					write_calib_data();
-				}
-			}
-		}
-		if (load_flag == 1) {
-			if ((handle = dat_open("calib.dat")) == 0) {
-				strcpy(main_info.error_str, "Error loading 'calib.dat', aborting...\n");
-				return 1;
-			}
-			joy.calib_data.x1 = (handle[0]) + (handle[1] << 8) + (handle[2] << 16) + (handle[3] << 24); handle += 4;
-			joy.calib_data.x2 = (handle[0]) + (handle[1] << 8) + (handle[2] << 16) + (handle[3] << 24); handle += 4;
-			joy.calib_data.x3 = (handle[0]) + (handle[1] << 8) + (handle[2] << 16) + (handle[3] << 24); handle += 4;
-			joy.calib_data.y1 = (handle[0]) + (handle[1] << 8) + (handle[2] << 16) + (handle[3] << 24); handle += 4;
-			joy.calib_data.y2 = (handle[0]) + (handle[1] << 8) + (handle[2] << 16) + (handle[3] << 24); handle += 4;
-			joy.calib_data.y3 = (handle[0]) + (handle[1] << 8) + (handle[2] << 16) + (handle[3] << 24); handle += 4;
-		}
-	}
+    init_inputs();
 
 #ifdef USE_NET
 	if (is_net) {
@@ -3441,64 +3373,4 @@ int dat_filelen(char *file_name)
 	}
 
 	return 0;
-}
-
-
-void write_calib_data(void)
-{
-	FILE *handle;
-	int c1;
-	int len, num;
-	char *mem;
-	int ofs;
-
-	if ((handle = fopen(datfile_name, "rb")) == NULL)
-		return;
-	len = filelength(fileno(handle));
-	if ((mem = malloc(len)) == NULL)
-		return;
-	if (fread(mem, 1, len, handle) != len)
-		return;
-	fclose(handle);
-
-	ofs = 4;
-	num = *(int *) (&mem[0]);
-	for (c1 = 0; c1 < num; c1++) {
-		if (strnicmp(&mem[ofs], "calib.dat", strlen("calib.dat")) == 0) {
-			ofs = *(int *) (&mem[ofs + 12]);
-			break;
-		}
-		ofs += 20;
-	}
-
-	mem[ofs] = joy.calib_data.x1 & 0xff;
-	mem[ofs + 1] = (joy.calib_data.x1 >> 8) & 0xff;
-	mem[ofs + 2] = (joy.calib_data.x1 >> 16) & 0xff;
-	mem[ofs + 3] = (joy.calib_data.x1 >> 24) & 0xff;
-	mem[ofs + 4] = joy.calib_data.x2 & 0xff;
-	mem[ofs + 5] = (joy.calib_data.x2 >> 8) & 0xff;
-	mem[ofs + 6] = (joy.calib_data.x2 >> 16) & 0xff;
-	mem[ofs + 7] = (joy.calib_data.x2 >> 24) & 0xff;
-	mem[ofs + 8] = joy.calib_data.x3 & 0xff;
-	mem[ofs + 9] = (joy.calib_data.x3 >> 8) & 0xff;
-	mem[ofs + 10] = (joy.calib_data.x3 >> 16) & 0xff;
-	mem[ofs + 11] = (joy.calib_data.x3 >> 24) & 0xff;
-	mem[ofs + 12] = joy.calib_data.y1 & 0xff;
-	mem[ofs + 13] = (joy.calib_data.y1 >> 8) & 0xff;
-	mem[ofs + 14] = (joy.calib_data.y1 >> 16) & 0xff;
-	mem[ofs + 15] = (joy.calib_data.y1 >> 24) & 0xff;
-	mem[ofs + 16] = joy.calib_data.y2 & 0xff;
-	mem[ofs + 17] = (joy.calib_data.y2 >> 8) & 0xff;
-	mem[ofs + 18] = (joy.calib_data.y2 >> 16) & 0xff;
-	mem[ofs + 19] = (joy.calib_data.y2 >> 24) & 0xff;
-	mem[ofs + 20] = joy.calib_data.y3 & 0xff;
-	mem[ofs + 21] = (joy.calib_data.y3 >> 8) & 0xff;
-	mem[ofs + 22] = (joy.calib_data.y3 >> 16) & 0xff;
-	mem[ofs + 23] = (joy.calib_data.y3 >> 24) & 0xff;
-
-	if ((handle = fopen(datfile_name, "wb")) == NULL)
-		return;
-	fwrite(mem, 1, len, handle);
-	fclose(handle);
-
 }

@@ -557,7 +557,6 @@ int menu(void)
 
 	}
 
-	menu_deinit();
 	return 0;
 
 }

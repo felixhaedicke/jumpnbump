@@ -211,10 +211,6 @@ typedef struct {
 	int x, y;
 	int raw_x, raw_y;
 	int but1, but2;
-	struct {
-		int x1, x2, x3;
-		int y1, y2, y3;
-	} calib_data;
 } joy_t;
 
 typedef struct {
@@ -267,20 +263,17 @@ unsigned short rnd(unsigned short max);
 int read_level(void);
 unsigned char *dat_open(char *file_name);
 int dat_filelen(char *file_name);
-void write_calib_data(void);
 
 
 /* input.c */
 
 void update_player_actions(void);
 void init_inputs(void);
-int calib_joy();
 
 /* menu.c */
 
 int menu(void);
 int menu_init(void);
-void menu_deinit(void);
 
 
 /* gfx.c */
