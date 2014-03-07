@@ -25,7 +25,9 @@
 
 #include "globals.h"
 #include <fcntl.h>
-#ifndef _MSC_VER
+#ifdef _MSC_VER
+#include <io.h>
+#else
 #include <sys/types.h>  
 #include <sys/stat.h>  
 #include <unistd.h>  
@@ -2943,14 +2945,12 @@ int init_program(int argc, char *argv[], char *pal)
 		return 1;
 #endif
 
-	srand(time(NULL));
+	srand((int) time(NULL));
 
 	if (hook_keyb_handler() != 0)
 		return 1;
 
 	memset(&main_info, 0, sizeof(main_info));
-
-	strcpy(datfile_name, DATA_PATH);
 
 	if (argc > 1) {
 		for (c1 = 1; c1 < argc; c1++) {

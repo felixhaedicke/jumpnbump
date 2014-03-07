@@ -148,7 +148,6 @@ static void updateSoundParams(int slot, int volume)
 
 void mix_sound(void *unused, Uint8 *stream, int len)
 {
-	UNUSED(unused);
 	/* Mix current sound data. */
 	/* Data, from raw sound, for right and left. */
 	register int sample;
@@ -164,6 +163,8 @@ void mix_sound(void *unused, Uint8 *stream, int len)
 
 	/* Mixing channel index. */
 	int       chan;
+
+	UNUSED(unused);
 
 	/* Left and right channel */
 	/*  are in audio stream, alternating. */

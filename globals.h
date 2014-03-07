@@ -50,16 +50,17 @@ extern "C" {
 #endif
 
 #include <SDL.h>
+#include <SDL_stdinc.h>
 #ifndef NO_SDL_MIXER
 #include <SDL_mixer.h>
 #endif
 
 #ifndef WIN32
-#  define stricmp strcasecmp
+#  define stricmp SDL_strcasecmp
 #endif
 
 #ifndef WIN32
-#  define strnicmp strncasecmp
+#  define strnicmp SDL_strncasecmp
 #endif
 
 #define JNB_MAX_PLAYERS 4
