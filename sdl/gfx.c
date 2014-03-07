@@ -54,6 +54,7 @@ static void *background = NULL;
 static int background_drawn;
 static void *mask = NULL;
 static int dirty_blocks[2][25][16];
+static SDL_Rect current_render_size;
 
 static SDL_Surface *load_xpm_from_array(char **xpm)
 {
@@ -193,6 +194,9 @@ void open_screen(void)
 		fprintf(stderr, "SDL ERROR (SDL_CreateWindow): %s\n", SDL_GetError());
 		exit(EXIT_FAILURE);
 	}
+	current_render_size.x = 0;
+	current_render_size.y = 0;
+	SDL_GetWindowSize(jnb_window, &current_render_size.w, &current_render_size.h);
 
 	jnb_renderer = SDL_CreateRenderer(jnb_window, -1, SDL_RENDERER_ACCELERATED);
 	if (!jnb_renderer) {
@@ -451,8 +455,7 @@ void flippage(int page)
 		}
 	}
 
-	SDL_RenderCopy(jnb_renderer, jnb_texture, NULL, NULL);
-
+	SDL_RenderCopy(jnb_renderer, jnb_texture, NULL, &current_render_size);
 	SDL_RenderPresent(jnb_renderer);
 }
 
@@ -972,3 +975,30 @@ void register_mask(void *pixels)
 		memcpy(mask, pixels, JNB_WIDTH*JNB_HEIGHT);
 	}
 }
+
+void on_resized(int width, int height)
+{
+	float aspect = ((float) width) / ((float) height);
+	if (aspect > 1.333333333) {
+		if (aspect < 1.777777778f) {
+			current_render_size.w = width;
+			current_render_size.h = height;
+			current_render_size.x = 0;
+			current_render_size.y = 0;
+		} else {
+			current_render_size.w = (float) (height * 16) / ((float) 9);
+			current_render_size.h = height;
+			current_render_size.x = (width - current_render_size.w) / 2;
+			current_render_size.y = 0;
+		}
+	} else {
+		current_render_size.w = width;
+		current_render_size.h = (float) (width * 3) / ((float) 4);
+		current_render_size.x = 0;
+		current_render_size.y = (height - current_render_size.h) / 2;
+	}
+	SDL_RenderClear(jnb_renderer);
+	SDL_RenderCopy(jnb_renderer, jnb_texture, NULL, &current_render_size);
+	SDL_RenderPresent(jnb_renderer);
+}
+

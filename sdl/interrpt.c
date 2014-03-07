@@ -417,6 +417,22 @@ int intr_sysupdate()
 				break;
 			}
 			break;
+		case SDL_WINDOWEVENT:
+			switch (e.window.event) {
+			case SDL_WINDOWEVENT_RESIZED:
+				on_resized(e.window.data1, e.window.data2);
+			case SDL_WINDOWEVENT_MAXIMIZED:
+			case SDL_WINDOWEVENT_RESTORED:
+				{
+					int w = 0, h = 0;
+					SDL_Window* window = SDL_GetWindowFromID(e.window.windowID);
+					if (window)
+						SDL_GetWindowSize(SDL_GetWindowFromID(e.window.windowID), &w, &h);
+					if ((w > 0) && (h > 0))
+						on_resized(e.window.data1, e.window.data2);
+				}
+			}
+			break;
 		case SDL_QUIT:
 			deinit_program();
 			break;

@@ -308,6 +308,7 @@ int read_pcx(unsigned char * handle, void *buffer, int buf_len, char *pal);
 void register_background(char *pixels, char pal[768]);
 int register_gob(unsigned char *handle, gob_t *gob, int len);
 void register_mask(void *pixels);
+void on_resized(int width, int height);
 
 /* gfx.c */
 
