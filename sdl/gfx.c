@@ -40,12 +40,12 @@ int screen_width=800;
 int screen_height=512;
 int screen_pitch=800;
 int scale_up=1;
-int dirty_block_shift=5;
 
 static SDL_Window *jnb_window = NULL;
 static SDL_Renderer *jnb_renderer = NULL;
 static SDL_PixelFormat *jnb_pixelformat = NULL;
 static SDL_Texture *jnb_texture = NULL;
+static SDL_PixelFormat* jnb_texture_pixel_format = NULL;
 static int fullscreen = 1;
 static int vinited = 0;
 static void *screen_buffer[2];
@@ -53,7 +53,7 @@ static int drawing_enable = 0;
 static void *background = NULL;
 static int background_drawn;
 static void *mask = NULL;
-static int dirty_blocks[2][25*16*2];
+static int dirty_blocks[2][25][16];
 
 static SDL_Surface *load_xpm_from_array(char **xpm)
 {
@@ -157,13 +157,11 @@ void set_scaling(int scale)
 		screen_width=800;
 		screen_height=512;
 		scale_up=1;
-		dirty_block_shift=5;
 		screen_pitch=screen_width;
 	} else {
 		screen_width=400;
 		screen_height=256;
 		scale_up=0;
-		dirty_block_shift=4;
 		screen_pitch=screen_width;
 	}
 }
@@ -172,10 +170,12 @@ void open_screen(void)
 {
 	int lval = 0;
 	int flags = SDL_WINDOW_RESIZABLE;
+	SDL_RendererInfo renderer_info;
+	Uint32 texture_format;
 
 	lval = SDL_Init(SDL_INIT_TIMER | SDL_INIT_AUDIO | SDL_INIT_VIDEO | SDL_INIT_JOYSTICK);
 	if (lval < 0) {
-		fprintf(stderr, "SDL ERROR: %s\n", SDL_GetError());
+		fprintf(stderr, "SDL ERROR (SDL_Init): %s\n", SDL_GetError());
 		exit(EXIT_FAILURE);
 	}
 
@@ -190,30 +190,29 @@ void open_screen(void)
 			screen_height,
 			flags);
 	if (!jnb_window) {
-		fprintf(stderr, "SDL ERROR: %s\n", SDL_GetError());
+		fprintf(stderr, "SDL ERROR (SDL_CreateWindow): %s\n", SDL_GetError());
 		exit(EXIT_FAILURE);
 	}
 
 	jnb_renderer = SDL_CreateRenderer(jnb_window, -1, SDL_RENDERER_ACCELERATED);
 	if (!jnb_renderer) {
-		fprintf(stderr, "SDL ERROR: %s\n", SDL_GetError());
+		fprintf(stderr, "SDL ERROR (SDL_CreateRenderer): %s\n", SDL_GetError());
 		exit(EXIT_FAILURE);
 	}
 
-	SDL_RendererInfo renderer_info;
 	if (SDL_GetRendererInfo(jnb_renderer, &renderer_info) == 0) {
 		printf("Using SDL renderer %s\n", renderer_info.name);
 	}
 
 	jnb_pixelformat = SDL_AllocFormat(SDL_PIXELFORMAT_INDEX8);
 	if (jnb_pixelformat == NULL) {
-		fprintf(stderr, "SDL ERROR: %s\n", SDL_GetError());
+		fprintf(stderr, "SDL ERROR (SDL_AllocFormat): %s\n", SDL_GetError());
 		exit(EXIT_FAILURE);
 	}
 
 	jnb_pixelformat->palette = SDL_AllocPalette(256);
 	if (jnb_pixelformat->palette == NULL) {
-		fprintf(stderr, "SDL ERROR: %s\n", SDL_GetError());
+		fprintf(stderr, "SDL ERROR (SDL_AllocPalette): %s\n", SDL_GetError());
 		exit(EXIT_FAILURE);
 	}
 
@@ -223,7 +222,19 @@ void open_screen(void)
 				screen_width,
 				screen_height);
 	if (jnb_texture == NULL) {
-		fprintf(stderr, "SDL ERROR: %s\n", SDL_GetError());
+		fprintf(stderr, "SDL ERROR (SDL_CreateTexture): %s\n", SDL_GetError());
+		exit(EXIT_FAILURE);
+	}
+
+	if (SDL_QueryTexture(jnb_texture, &texture_format, NULL, NULL, NULL) != 0)
+	{
+		fprintf(stderr, "SDL ERROR (SDL_QueryTexture): %s\n", SDL_GetError());
+		exit(EXIT_FAILURE);
+	}
+	jnb_texture_pixel_format = SDL_AllocFormat(texture_format);
+	if (!jnb_texture_pixel_format)
+	{
+		fprintf(stderr, "SDL ERROR (SDL_AllocFormat): %s\n", SDL_GetError());
 		exit(EXIT_FAILURE);
 	}
 
@@ -252,11 +263,15 @@ void open_screen(void)
 
 void fs_toggle()
 {
+	Uint32 fullscreen_flags;
+
 	if (!vinited) {
 		fullscreen ^= 1;
 		return;
 	}
-	Uint32 fullscreen_flags = fullscreen ? 0: SDL_WINDOW_FULLSCREEN_DESKTOP;
+
+	fullscreen_flags = fullscreen ? 0: SDL_WINDOW_FULLSCREEN_DESKTOP;
+	
 	if (SDL_SetWindowFullscreen(jnb_window,fullscreen_flags) == 0)
 		fullscreen ^= 1;
 }
@@ -280,8 +295,9 @@ void clear_page(int page, int color)
 
 	assert(drawing_enable==1);
 
-	for (i=0; i<(25*16); i++)
-		dirty_blocks[page][i] = 1;
+	for (i=0; i<25; i++)
+		for (j=0; j<16; j++)
+			dirty_blocks[page][i][j] = 1;
 
 	for (i=0; i<screen_height; i++)
 		for (j=0; j<screen_width; j++)
@@ -307,11 +323,15 @@ void clear_lines(int page, int y, int count, int color)
 				*buf++ = color;
 		}
 	}
-	count = ((y+count)>>dirty_block_shift) - (y>>dirty_block_shift) + 1;
-	y >>= dirty_block_shift;
+
+	y /= screen_height / 16;
+	count /= screen_height / 16;
+    count++;
+    while ((y + count) >= 16)
+        count--;
 	for (i=0; i<count; i++)
 		for (j=0; j<25; j++)
-			dirty_blocks[page][(y+i)*25+j] = 1;
+			dirty_blocks[page][j][i+y] = 1;
 }
 
 
@@ -351,7 +371,7 @@ void set_pixel(int page, int x, int y, int color)
 	assert(x<screen_width);
 	assert(y<screen_height);
 
-	dirty_blocks[page][(y>>dirty_block_shift)*25+(x>>dirty_block_shift)] = 1;
+	dirty_blocks[page][x / (screen_width / 25)][y / (screen_height / 16)] = 1;
 
 	*(unsigned char *)get_vgaptr(page, x, y) = color;
 }
@@ -362,46 +382,75 @@ void flippage(int page)
 	int x,y,pitch;
 	unsigned char *src;
 	unsigned char *dest;
+	int block_x, block_y;
+	SDL_Color* colors;
 
 	assert(drawing_enable==0);
 
-	SDL_LockTexture(jnb_texture, NULL, (void **)&dest, &pitch);
-	int bytes_per_pixel = pitch / screen_width;
 	src=screen_buffer[page];
-	for (y=0; y<screen_height; y++) {
-		for (x=0; x<25; x++) {
-			int count;
-			int test_x;
 
-			count=0;
-			test_x=x;
-			while ( (test_x<25) && (dirty_blocks[page][(y>>dirty_block_shift)*25+test_x]) ) {
-				count++;
-				test_x++;
-			}
-			if (count) {
-				SDL_Color* colors = jnb_pixelformat->palette->colors;
-				unsigned int i;
-				for (i = 0; i < (((16<<dirty_block_shift)>>4)*count); ++i) {
-					SDL_Color color = colors[src[(y*screen_pitch+((x<<dirty_block_shift)))+i]];
-					if (bytes_per_pixel == 4) {
-						dest[((y*pitch/4+(x<<dirty_block_shift))+i)*4] = color.b;
-						dest[((y*pitch/4+(x<<dirty_block_shift))+i)*4+1] = color.g;
-						dest[((y*pitch/4+(x<<dirty_block_shift))+i)*4+2] = color.r;
-					} else if (bytes_per_pixel == 2) {
-						dest[((y*pitch/2+(x<<dirty_block_shift))+i)*2] = (color.b >> 4) | ((color.g >> 4) << 4);
-						dest[((y*pitch/2+(x<<dirty_block_shift))+i)*2+1] = color.r >> 4;
-					} else {
-						printf("%d bytes per pixel not supported", bytes_per_pixel);
-						exit(1);
+	colors = jnb_pixelformat->palette->colors;
+
+	for (block_x = 0; block_x < 25; ++block_x) {
+		for (block_y = 0; block_y < 16; ++block_y) {
+			if (dirty_blocks[page][block_x][block_y])
+			{
+				int block_with = 1;
+				int block_height = 1;
+				SDL_Rect lock_area;
+				int i, j;
+				int expand_x, expand_y;
+
+				expand_x = 1;
+				expand_y = 1;
+				while (expand_x || expand_y) {
+					expand_x = expand_x && ((block_x + block_with) < 25);
+					for (i = 0; i < block_height && expand_x; ++i) {
+						expand_x = dirty_blocks[page][block_x + block_with][block_y + i];
+					}
+					if (expand_x) ++block_with;
+
+					expand_y = expand_y && ((block_y + block_height) < 16);
+					for (i = 0; i < block_with && expand_x; ++i) {
+						expand_x = dirty_blocks[page][block_x + i][block_y + block_height];
+					}
+					if (expand_y) ++block_height;
+				}
+
+				lock_area.w = (screen_width / 25) * block_with;
+				lock_area.h = (screen_height / 16) * block_height;
+				lock_area.x = (screen_width / 25) * block_x;
+				lock_area.y = (screen_height / 16) * block_y;
+				SDL_LockTexture(jnb_texture, &lock_area, (void **)&dest, &pitch);
+				for (x = 0; x < lock_area.w; ++x) {
+					for (y = 0; y < lock_area.h; ++y) {
+						SDL_Color color = colors[src[screen_pitch * (y + lock_area.y) + x + lock_area.x]];
+						void* dest_ptr = dest + y * pitch + x * jnb_texture_pixel_format->BytesPerPixel;
+
+						if (jnb_texture_pixel_format->BytesPerPixel == 2)
+						{
+							Uint16* dest_int_ptr = (Uint16*) dest_ptr;
+							*dest_int_ptr = SDL_MapRGB(jnb_texture_pixel_format, color.r, color.g, color.b);
+						}
+						else if (jnb_texture_pixel_format->BytesPerPixel == 4)
+						{
+							Uint32* dest_int_ptr = (Uint32*) dest_ptr;
+							*dest_int_ptr = SDL_MapRGB(jnb_texture_pixel_format, color.r, color.g, color.b);
+						} else {
+							printf("%d bytes per pixel not supported", (int) jnb_texture_pixel_format->BytesPerPixel);
+							exit(1);
+						}
 					}
 				}
+				SDL_UnlockTexture(jnb_texture);
+
+				for (i = 0; i < block_with; ++i)
+					for (j = 0; j < block_height; ++j)
+						dirty_blocks[page][block_x + i][block_y + j] = 0;
 			}
-			x = test_x;
 		}
 	}
-	memset(&dirty_blocks[page], 0, sizeof(int)*25*16);
-	SDL_UnlockTexture(jnb_texture);
+
 	SDL_RenderCopy(jnb_renderer, jnb_texture, NULL, NULL);
 
 	SDL_RenderPresent(jnb_renderer);
@@ -507,7 +556,7 @@ void get_block(int page, int x, int y, int width, int height, void *buffer)
 
 void put_block(int page, int x, int y, int width, int height, void *buffer)
 {
-	int h;
+	int i, j, h;
 	unsigned char *vga_ptr, *buffer_ptr;
 
 	assert(drawing_enable==1);
@@ -539,13 +588,20 @@ void put_block(int page, int x, int y, int width, int height, void *buffer)
 		vga_ptr += screen_pitch;
 		buffer_ptr += width;
 	}
-	width = ((x+width)>>dirty_block_shift) - (x>>dirty_block_shift) + 1;
-	height = ((y+height)>>dirty_block_shift) - (y>>dirty_block_shift) + 1;
-	x >>= dirty_block_shift;
-	y >>= dirty_block_shift;
-	while (width--)
-		for (h=0; h<height; h++)
-			dirty_blocks[page][(y+h)*25+(x+width)] = 1;
+
+	width /= screen_width / 25;
+    width += 2;
+	height /= screen_height / 16;
+    height += 2;
+	x /= screen_width / 25;
+    y /= screen_height / 16;
+    while ((x + width) >= 25)
+        width--;
+    while ((y + height) >= 16)
+        height--;
+    for (i=0; i < width; ++i)
+        for (j=0; j < height; ++j)
+			dirty_blocks[page][i + x][j + y] = 1;
 }
 
 
@@ -688,6 +744,7 @@ void put_pob(int page, int x, int y, int image, gob_t *gob, int use_mask)
 	int width, height;
 	int draw_width, draw_height;
 	int colour;
+	int i, j;
 	unsigned char *vga_ptr;
 	unsigned char *pob_ptr;
 	unsigned char *mask_ptr;
@@ -753,13 +810,20 @@ void put_pob(int page, int x, int y, int image, gob_t *gob, int use_mask)
 		vga_ptr += (screen_width - c2);
 		mask_ptr += (screen_width - c2);
 	}
-	draw_width = ((x+draw_width)>>dirty_block_shift) - (x>>dirty_block_shift) + 1;
-	draw_height = ((y+draw_height)>>dirty_block_shift) - (y>>dirty_block_shift) + 1;
-	x >>= dirty_block_shift;
-	y >>= dirty_block_shift;
-	while (draw_width--)
-		for (c1=0; c1<draw_height; c1++)
-			dirty_blocks[page][(y+c1)*25+(x+draw_width)] = 1;
+
+	draw_width /= screen_width / 25;
+    draw_width += 2;
+	draw_height /= screen_height / 16;
+    draw_height += 2;
+	x /= screen_width / 25;
+	y /= screen_height / 16;
+    while ((x + draw_width) >= 25)
+        draw_width--;
+    while ((y + draw_height) >= 16)
+        draw_height--;
+    for (i=0; i < draw_width; ++i)
+        for (j=0; j < draw_height; ++j)
+			dirty_blocks[page][i + x][j + y] = 1;
 }
 
 
