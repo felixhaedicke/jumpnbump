@@ -3243,9 +3243,7 @@ void deinit_program(void)
 
 	if (main_info.error_str[0] != 0) {
 		puts(main_info.error_str);
-#ifdef _MSC_VER
-		MessageBox(0, main_info.error_str, "Jump'n'Bump", 0);
-#endif
+		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Jump'n'Bump", main_info.error_str, NULL);
 		exit(1);
 	} else
 		exit(0);
