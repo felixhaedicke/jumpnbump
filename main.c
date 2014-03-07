@@ -56,7 +56,7 @@ object_t objects[NUM_OBJECTS];
 joy_t joy;
 mouse_t mouse;
 
-char datfile_name[2048];
+char* datfile_name = NULL;
 
 char *background_pic;
 char *mask_pic;
@@ -2844,6 +2844,8 @@ void deinit_level(void)
 
 unsigned char *datafile_buffer = NULL;
 
+extern unsigned char default_jumpbump_dat[];
+
 static void preread_datafile(const char *fname)
 {
     int fd = 0;
@@ -2974,12 +2976,8 @@ int init_program(int argc, char *argv[], char *pal)
 				flip = 1;
 			else if (stricmp(argv[c1], "-dat") == 0) {
 				if (c1 < (argc - 1)) {
-					FILE *f;
-
-					if ((f = fopen(argv[c1 + 1], "rb")) != NULL) {
-						fclose(f);
-						strcpy(datfile_name, argv[c1 + 1]);
-					}
+					free(datfile_name);
+					datfile_name = strdup(argv[c1 + 1]);
 				}
 			} else if (stricmp(argv[c1], "-player") == 0) {
 				if (c1 < (argc - 1)) {
@@ -3034,7 +3032,10 @@ int init_program(int argc, char *argv[], char *pal)
 		}
 	}
 
-	preread_datafile(datfile_name);
+	if (datfile_name)
+		preread_datafile(datfile_name);
+	else
+		datafile_buffer = default_jumpbump_dat;
 
 #if 0
 /** It should not be necessary to assign a default player number here. The

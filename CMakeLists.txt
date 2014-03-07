@@ -48,6 +48,9 @@ add_custom_command(OUTPUT jumpbump.dat
 		objects.gob
 		rabbit.gob
 		font.gob)
-add_executable(${PROJECT_NAME} ${SRC_LIST} jumpbump.dat)
+add_custom_command(OUTPUT jumpbump_dat.c
+  COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/generate_jumpbump_dat_c.sh
+  DEPENDS jumpbump.dat)
+add_executable(${PROJECT_NAME} ${SRC_LIST} jumpbump_dat.c)
 target_link_libraries(${PROJECT_NAME} m ${SDL_LIBRARIES} ${SDL_MIXER_LIBRARIES})
 

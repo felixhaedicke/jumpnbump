@@ -147,8 +147,6 @@ extern int ai[JNB_MAX_PLAYERS];
 #define BAN_ICE		3
 #define BAN_SPRING	4
 
-#define	DATA_PATH "jumpbump.dat"
-
 #define UNUSED(x) (void)(x)
 
 typedef struct {
@@ -224,8 +222,6 @@ extern player_anim_t player_anims[7];
 extern object_t objects[NUM_OBJECTS];
 extern joy_t joy;
 extern mouse_t mouse;
-
-extern char datfile_name[2048];
 
 extern char *background_pic;
 extern char *mask_pic;
