@@ -171,9 +171,6 @@ void set_scaling(int scale)
 void open_screen(void)
 {
 	int lval = 0;
-	int flags = SDL_WINDOW_RESIZABLE;
-	SDL_RendererInfo renderer_info;
-	Uint32 texture_format;
 
 	lval = SDL_Init(SDL_INIT_TIMER | SDL_INIT_AUDIO | SDL_INIT_VIDEO | SDL_INIT_JOYSTICK);
 	if (lval < 0) {
@@ -181,19 +178,40 @@ void open_screen(void)
 		exit(EXIT_FAILURE);
 	}
 
+	reinit_screen();
+
+	vinited = 1;
+
+	screen_buffer[0]=malloc(screen_width*screen_height);
+	screen_buffer[1]=malloc(screen_width*screen_height);
+}
+
+void reinit_screen(void)
+{
+	int flags = SDL_WINDOW_RESIZABLE;
+	SDL_RendererInfo renderer_info;
+	Uint32 texture_format;
+
 	if (fullscreen)
 		flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
 	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "best");
 
-	jnb_window = SDL_CreateWindow("Jump'n'Bump",
-			SDL_WINDOWPOS_UNDEFINED,
-			SDL_WINDOWPOS_UNDEFINED,
-			screen_width,
-			screen_height,
-			flags);
+	if (jnb_texture)
+		SDL_DestroyTexture(jnb_texture);
+	if (jnb_renderer)
+		SDL_DestroyRenderer(jnb_renderer);
+
 	if (!jnb_window) {
-		fprintf(stderr, "SDL ERROR (SDL_CreateWindow): %s\n", SDL_GetError());
-		exit(EXIT_FAILURE);
+		jnb_window = SDL_CreateWindow("Jump'n'Bump",
+				SDL_WINDOWPOS_UNDEFINED,
+				SDL_WINDOWPOS_UNDEFINED,
+				screen_width,
+				screen_height,
+				flags);
+		if (!jnb_window) {
+			fprintf(stderr, "SDL ERROR (SDL_CreateWindow): %s\n", SDL_GetError());
+			exit(EXIT_FAILURE);
+		}
 	}
 	current_render_size.x = 0;
 	current_render_size.y = 0;
@@ -255,12 +273,7 @@ void open_screen(void)
 		SDL_SetWindowIcon(jnb_window,icon);
 	}
 
-	vinited = 1;
-
-	memset(dirty_blocks, 0, sizeof(dirty_blocks));
-
-	screen_buffer[0]=malloc(screen_width*screen_height);
-	screen_buffer[1]=malloc(screen_width*screen_height);
+	memset(dirty_blocks, 1, sizeof(dirty_blocks));
 
 	return;
 }

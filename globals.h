@@ -279,6 +279,7 @@ void exit_fullscreen();
 void fs_toggle();
 void set_scaling(int scale);
 void open_screen(void);
+void reinit_screen(void);
 void wait_vrt();
 void draw_begin(void);
 void draw_end(void);
