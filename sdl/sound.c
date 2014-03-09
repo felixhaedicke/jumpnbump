@@ -332,7 +332,7 @@ void dj_set_sfx_volume(char volume)
 	SDL_UnlockAudio();
 }
 
-void dj_play_sfx(unsigned char sfx_num, unsigned short freq, char volume, char channel)
+void dj_play_sfx(unsigned char sfx_num, unsigned short freq, char volume, signed char channel)
 {
 	int slot;
 
