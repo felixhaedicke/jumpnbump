@@ -433,9 +433,6 @@ void dj_free_sfx(unsigned char sfx_num)
 char dj_ready_mod(char mod_num)
 {
 #ifndef NO_SDL_MIXER
-	FILE *tmp;
-	int tmp_fd;
-	char* filename;
 	unsigned char *fp;
 	int len;
 
@@ -474,24 +471,12 @@ char dj_ready_mod(char mod_num)
 		return 0;
 	}
 
-	filename = strdup("/tmp/jumpnbump.mod.XXXXXX");
-	tmp_fd = mkstemp(filename);
-	if (tmp_fd == -1) {
-		free(filename);
-		return 0;
+	SDL_RWops* rw_ops = SDL_RWFromMem(fp, len);
+	if (rw_ops) {
+		current_music = Mix_LoadMUS_RW(rw_ops, 0);
+		SDL_FreeRW(rw_ops);
 	}
-	tmp = fdopen(tmp_fd, "wb");
-	if (!tmp) {
-		free(filename);
-		return 0;
-	}
-	fwrite(fp, len, 1, tmp);
-	fflush(tmp);
-	fclose(tmp);
 
-	current_music = Mix_LoadMUS(filename);
-	unlink(filename);
-	free(filename);
 	if (current_music == NULL) {
 		fprintf(stderr, "Couldn't load music: %s\n", SDL_GetError());
 		return 0;
