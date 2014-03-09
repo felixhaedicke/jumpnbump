@@ -24,8 +24,9 @@
  */
 
 #include "globals.h"
-#include "SDL_endian.h"
 #include "filter.h"
+
+#include <SDL_endian.h>
 
 #ifdef _MSC_VER
     #include "jumpnbump32.xpm"
