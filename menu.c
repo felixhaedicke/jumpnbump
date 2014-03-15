@@ -24,6 +24,7 @@
  */
 
 #include "globals.h"
+#include "version.h"
 
 char *menu_background;
 

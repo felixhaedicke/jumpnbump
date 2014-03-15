@@ -73,8 +73,6 @@ void tellServerPlayerMoved(int playerid, int movement_type, int newval);
 #define MOVEMENT_RIGHT 2
 #define MOVEMENT_UP    3
 
-#define JNB_VERSION "1.50"
-
 #define JNB_WIDTH 400
 #define JNB_HEIGHT 256
 
