@@ -421,18 +421,23 @@ int intr_sysupdate()
 			break;
 		case SDL_WINDOWEVENT:
 			switch (e.window.event) {
+			case SDL_WINDOWEVENT_RESTORED:
+				reinit_screen();
+				break;
 			case SDL_WINDOWEVENT_RESIZED:
 				on_resized(e.window.data1, e.window.data2);
+				break;
+			case SDL_WINDOWEVENT_SHOWN:
 			case SDL_WINDOWEVENT_MAXIMIZED:
-			case SDL_WINDOWEVENT_RESTORED:
 				{
 					int w = 0, h = 0;
 					SDL_Window* window = SDL_GetWindowFromID(e.window.windowID);
 					if (window)
-						SDL_GetWindowSize(SDL_GetWindowFromID(e.window.windowID), &w, &h);
+						SDL_GetWindowSize(window, &w, &h);
 					if ((w > 0) && (h > 0))
-						on_resized(e.window.data1, e.window.data2);
+						on_resized(w, h);
 				}
+				break;
 			}
 			break;
 		case SDL_QUIT:

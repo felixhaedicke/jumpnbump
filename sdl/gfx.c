@@ -197,10 +197,15 @@ void reinit_screen(void)
 	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "best");
 	SDL_SetHint(SDL_HINT_ORIENTATIONS, "LandscapeLeft");
 
-	if (jnb_texture)
+	if (jnb_texture) {
 		SDL_DestroyTexture(jnb_texture);
-	if (jnb_renderer)
+		jnb_texture = NULL;
+	}
+
+	if (jnb_renderer) {
 		SDL_DestroyRenderer(jnb_renderer);
+		jnb_renderer = NULL;
+	}
 
 	if (!jnb_window) {
 		jnb_window = SDL_CreateWindow("Jump'n'Bump",
@@ -218,26 +223,30 @@ void reinit_screen(void)
 	current_render_size.y = 0;
 	SDL_GetWindowSize(jnb_window, &current_render_size.w, &current_render_size.h);
 
-	jnb_renderer = SDL_CreateRenderer(jnb_window, -1, SDL_RENDERER_ACCELERATED);
 	if (!jnb_renderer) {
-		fprintf(stderr, "SDL ERROR (SDL_CreateRenderer): %s\n", SDL_GetError());
-		exit(EXIT_FAILURE);
+		jnb_renderer = SDL_CreateRenderer(jnb_window, -1, SDL_RENDERER_ACCELERATED);
+		if (!jnb_renderer) {
+			fprintf(stderr, "SDL ERROR (SDL_CreateRenderer): %s\n", SDL_GetError());
+			exit(EXIT_FAILURE);
+		}
+
+		if (SDL_GetRendererInfo(jnb_renderer, &renderer_info) == 0) {
+			printf("Using SDL renderer %s\n", renderer_info.name);
+		}
 	}
 
-	if (SDL_GetRendererInfo(jnb_renderer, &renderer_info) == 0) {
-		printf("Using SDL renderer %s\n", renderer_info.name);
-	}
+	if (!jnb_pixelformat) {
+		jnb_pixelformat = SDL_AllocFormat(SDL_PIXELFORMAT_INDEX8);
+		if (jnb_pixelformat == NULL) {
+			fprintf(stderr, "SDL ERROR (SDL_AllocFormat): %s\n", SDL_GetError());
+			exit(EXIT_FAILURE);
+		}
 
-	jnb_pixelformat = SDL_AllocFormat(SDL_PIXELFORMAT_INDEX8);
-	if (jnb_pixelformat == NULL) {
-		fprintf(stderr, "SDL ERROR (SDL_AllocFormat): %s\n", SDL_GetError());
-		exit(EXIT_FAILURE);
-	}
-
-	jnb_pixelformat->palette = SDL_AllocPalette(256);
-	if (jnb_pixelformat->palette == NULL) {
-		fprintf(stderr, "SDL ERROR (SDL_AllocPalette): %s\n", SDL_GetError());
-		exit(EXIT_FAILURE);
+		jnb_pixelformat->palette = SDL_AllocPalette(256);
+		if (jnb_pixelformat->palette == NULL) {
+			fprintf(stderr, "SDL ERROR (SDL_AllocPalette): %s\n", SDL_GetError());
+			exit(EXIT_FAILURE);
+		}
 	}
 
 	jnb_texture = SDL_CreateTexture(jnb_renderer,
