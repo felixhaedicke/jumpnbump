@@ -10,44 +10,8 @@ if(NOT SDL_MIXER_FOUND)
 endif()
 include_directories(. SYSTEM ${SDL_INCLUDE_DIRS} ${SDL_MIXER_INCLUDE_DIRS})
 link_directories(${SDL_LIBRARY_DIRS} ${SDL_MIXER_LIBRARY_DIRS})
-add_custom_command(OUTPUT numbers.gob
-	COMMAND tcc -run ${CMAKE_SOURCE_DIR}/modify/gobpack.c
-		${CMAKE_SOURCE_DIR}/data/numbers)
-add_custom_command(OUTPUT objects.gob
-	COMMAND tcc -run ${CMAKE_SOURCE_DIR}/modify/gobpack.c
-		${CMAKE_SOURCE_DIR}/data/objects)
-add_custom_command(OUTPUT rabbit.gob
-	COMMAND tcc -run ${CMAKE_SOURCE_DIR}/modify/gobpack.c
-		${CMAKE_SOURCE_DIR}/data/rabbit)
-add_custom_command(OUTPUT font.gob
-	COMMAND tcc -run ${CMAKE_SOURCE_DIR}/modify/gobpack.c
-		${CMAKE_SOURCE_DIR}/data/font)
 add_custom_command(OUTPUT jumpbump.dat
-	COMMAND tcc -run ${CMAKE_SOURCE_DIR}/modify/jnbpack.c
-		-o jumpbump.dat
-		${CMAKE_SOURCE_DIR}/data/bump.mod
-		${CMAKE_SOURCE_DIR}/data/calib.dat
-		${CMAKE_SOURCE_DIR}/data/death.smp
-		${CMAKE_SOURCE_DIR}/data/fly.smp
-		${CMAKE_SOURCE_DIR}/data/jump.mod
-		${CMAKE_SOURCE_DIR}/data/jump.smp
-		${CMAKE_SOURCE_DIR}/data/levelmap.txt
-		${CMAKE_SOURCE_DIR}/data/level.pcx
-		${CMAKE_SOURCE_DIR}/data/mask.pcx
-		${CMAKE_SOURCE_DIR}/data/menu.pcx
-		${CMAKE_SOURCE_DIR}/data/menumask.pcx
-		${CMAKE_SOURCE_DIR}/data/scores.mod
-		${CMAKE_SOURCE_DIR}/data/splash.smp
-		${CMAKE_SOURCE_DIR}/data/spring.smp
-		numbers.gob
-		objects.gob
-		rabbit.gob
-		font.gob
-	DEPENDS
-		numbers.gob
-		objects.gob
-		rabbit.gob
-		font.gob)
+  COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/generate_jumpbump_dat.sh)
 add_custom_command(OUTPUT jumpbump_dat.c
   COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/generate_jumpbump_dat_c.sh
   DEPENDS jumpbump.dat)
