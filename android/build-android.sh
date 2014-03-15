@@ -40,6 +40,12 @@ do
   done
 done
 
+if [ -e "android-project" ]
+then
+  echo "\"android-project\" exists already!" >&2
+  exit 1
+fi
+
 cp -r "${SDL_SRC_DIR}/android-project" . || exit $?
 
 "${ANDROID_SDK_DIR}/tools/android" update project --name jumpnbump --target android-${TARGET_SDK_VERSION} --path android-project || exit $?
