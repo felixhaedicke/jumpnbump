@@ -403,6 +403,8 @@ int intr_sysupdate()
 				addkey((KEY_PL4_JUMP & 0x7f) | 0x8000);
 				break;
 			case SDLK_ESCAPE:
+			case SDLK_AC_BACK:
+			case SDLK_BACKSPACE:
 				if (e.type == SDL_KEYUP)
 					addkey(1 | 0x8000);
 				else
