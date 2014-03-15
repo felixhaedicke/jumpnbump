@@ -1,0 +1,8 @@
+Package: org.jumpnbump
+Version: VERSION_PLACEHOLDER
+Priority: optional
+Architecture: iphoneos-arm
+Description: Jump'n'Bump is a multiplayer platform game with bunnies
+Maintainer: Felix Hädicke <felixhaedicke@web.de>
+Homepage: https://github.com/felixhaedicke/jumpnbump
+Section: Games

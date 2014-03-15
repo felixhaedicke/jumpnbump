@@ -195,6 +195,7 @@ void reinit_screen(void)
 	if (fullscreen)
 		flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
 	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "best");
+	SDL_SetHint(SDL_HINT_ORIENTATIONS, "LandscapeLeft");
 
 	if (jnb_texture)
 		SDL_DestroyTexture(jnb_texture);
