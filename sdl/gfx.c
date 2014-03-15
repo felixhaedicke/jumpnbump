@@ -1004,8 +1004,8 @@ void register_mask(void *pixels)
 void on_resized(int width, int height)
 {
 	float aspect = ((float) width) / ((float) height);
-	if (aspect > 1.333333333) {
-		if (aspect < 1.777777778f) {
+	if (aspect > 1.3) {
+		if (aspect < 1.9f) {
 			current_render_size.w = width;
 			current_render_size.h = height;
 			current_render_size.x = 0;
