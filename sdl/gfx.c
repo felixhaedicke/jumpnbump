@@ -178,6 +178,9 @@ void open_screen(void)
 		exit(EXIT_FAILURE);
 	}
 
+	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "best");
+	SDL_SetHint(SDL_HINT_ORIENTATIONS, "LandscapeLeft");
+
 	reinit_screen();
 
 	vinited = 1;
@@ -194,8 +197,6 @@ void reinit_screen(void)
 
 	if (fullscreen)
 		flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
-	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "best");
-	SDL_SetHint(SDL_HINT_ORIENTATIONS, "LandscapeLeft");
 
 	if (jnb_texture) {
 		SDL_DestroyTexture(jnb_texture);
