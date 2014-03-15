@@ -42,6 +42,8 @@ char local_keyb[256];
 char keyb[256];
 char last_keys[50];
 
+extern SDL_Joystick* accelerometer;
+
 #ifdef USE_KAILLERA
 
 /* information about the party in this session */
@@ -309,48 +311,54 @@ int intr_sysupdate()
 		switch (e.type) {
 		case SDL_MOUSEBUTTONDOWN:
 		case SDL_MOUSEBUTTONUP:
-			if(e.button.state == SDL_PRESSED &&
-					((key_pressed(KEY_PL3_LEFT) && e.button.button == SDL_BUTTON_RIGHT) ||
-					(key_pressed(KEY_PL3_RIGHT) && e.button.button == SDL_BUTTON_LEFT) ||
-					(e.button.button == SDL_BUTTON_LEFT && e.button.button == SDL_BUTTON_RIGHT) ||
-          e.button.button == SDL_BUTTON_MIDDLE))
-				{
-				addkey(KEY_PL3_JUMP & 0x7f);
+			if (accelerometer) {
+				if (e.button.button == SDL_BUTTON_LEFT) {
+					if (e.button.state == SDL_PRESSED) {
+						addkey(KEY_PL1_JUMP & 0x7f);
+					} else {
+						addkey((KEY_PL1_JUMP & 0x7f) | 0x8000);
+					}
 				}
-			else if(e.button.state == SDL_RELEASED &&
-					((key_pressed(KEY_PL3_LEFT) && e.button.button == SDL_BUTTON_RIGHT) ||
-					(key_pressed(KEY_PL3_RIGHT) && e.button.button == SDL_BUTTON_LEFT) ||
-          e.button.button == SDL_BUTTON_MIDDLE))
+			} else {
+				if (e.button.state == SDL_PRESSED &&
+						((key_pressed(KEY_PL3_LEFT) && e.button.button == SDL_BUTTON_RIGHT) ||
+						(key_pressed(KEY_PL3_RIGHT) && e.button.button == SDL_BUTTON_LEFT) ||
+						(e.button.button == SDL_BUTTON_LEFT && e.button.button == SDL_BUTTON_RIGHT) ||
+						e.button.button == SDL_BUTTON_MIDDLE))
 				{
-				addkey((KEY_PL3_JUMP & 0x7f) | 0x8000);
+					addkey(KEY_PL3_JUMP & 0x7f);
+				}
+				else if (e.button.state == SDL_RELEASED &&
+						((key_pressed(KEY_PL3_LEFT) && e.button.button == SDL_BUTTON_RIGHT) ||
+						(key_pressed(KEY_PL3_RIGHT) && e.button.button == SDL_BUTTON_LEFT) ||
+						e.button.button == SDL_BUTTON_MIDDLE))
+				{
+					addkey((KEY_PL3_JUMP & 0x7f) | 0x8000);
 				}
 
-			if(e.button.button == SDL_BUTTON_LEFT)
-				{
-				SDL_Keycode sym = KEY_PL3_LEFT;
-				sym &= 0x7f;
-				if(e.button.state == SDL_RELEASED)
-					{
-					if(key_pressed(KEY_PL3_JUMP) && (SDL_GetMouseState(NULL, NULL)&SDL_BUTTON(SDL_BUTTON_RIGHT)))
-						addkey(KEY_PL3_RIGHT & 0x7f);
-					else
-						sym |= 0x8000;
+				if (e.button.button == SDL_BUTTON_LEFT) {
+					SDL_Keycode sym = KEY_PL3_LEFT;
+					sym &= 0x7f;
+					if(e.button.state == SDL_RELEASED) {
+						if(key_pressed(KEY_PL3_JUMP) && (SDL_GetMouseState(NULL, NULL)&SDL_BUTTON(SDL_BUTTON_RIGHT)))
+							addkey(KEY_PL3_RIGHT & 0x7f);
+						else
+							sym |= 0x8000;
 					}
-				addkey(sym);
+					addkey(sym);
 				}
-			else if(e.button.button == SDL_BUTTON_RIGHT)
-				{
-				SDL_Keycode sym = KEY_PL3_RIGHT;
-				sym &= 0x7f;
-				if (e.button.state == SDL_RELEASED)
-					{
-					if(key_pressed(KEY_PL3_JUMP) && (SDL_GetMouseState(NULL, NULL)&SDL_BUTTON(SDL_BUTTON_LEFT)))
-						addkey(KEY_PL3_LEFT & 0x7f);
-					else
-						sym |= 0x8000;
+				else if (e.button.button == SDL_BUTTON_RIGHT) {
+					SDL_Keycode sym = KEY_PL3_RIGHT;
+					sym &= 0x7f;
+					if (e.button.state == SDL_RELEASED) {
+						if(key_pressed(KEY_PL3_JUMP) && (SDL_GetMouseState(NULL, NULL)&SDL_BUTTON(SDL_BUTTON_LEFT)))
+							addkey(KEY_PL3_LEFT & 0x7f);
+						else
+							sym |= 0x8000;
 					}
-				addkey(sym);
+					addkey(sym);
 				}
+			}
 			break;
 		case SDL_KEYDOWN:
 		case SDL_KEYUP:

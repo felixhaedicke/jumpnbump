@@ -25,12 +25,31 @@
 
 #include "globals.h"
 
+#include <string.h>
+
+#include <SDL_platform.h>
+
 static int num_joys=0;
-static SDL_Joystick *joys[4];
+static SDL_Joystick* joys[4];
+SDL_Joystick* accelerometer = NULL;
 
 /* assumes joysticks have at least one button, could check numbuttons first? */
+#ifdef __IPHONEOS__
+#	define ACCELEROMETER_JOY_SUPPORTED
+#	define ACCELEROMETER_JOY_LEFT() (accelerometer && SDL_JoystickGetAxis(accelerometer, 1)>350)
+#	define ACCELEROMETER_JOY_RIGHT() (accelerometer && SDL_JoystickGetAxis(accelerometer, 1)<-350)
+#elif defined(__ANDROID__)
+#	define ACCELEROMETER_JOY_SUPPORTED
+#	define ACCELEROMETER_JOY_LEFT() (accelerometer && SDL_JoystickGetAxis(accelerometer, 0)<-1500)
+#	define ACCELEROMETER_JOY_RIGHT() (accelerometer && SDL_JoystickGetAxis(accelerometer, 0)>1500)
+#else
+#	define ACCELEROMETER_JOY_LEFT() (0)
+#	define ACCELEROMETER_JOY_RIGHT() (0)
+#endif
+
 #define JOY_LEFT(num) (num_joys>num && SDL_JoystickGetAxis(joys[num], 0)<-3200)
 #define JOY_RIGHT(num) (num_joys>num && SDL_JoystickGetAxis(joys[num], 0)>3200)
+
 /* I find using the vertical axis to be annoying -- dnb */
 #define JOY_JUMP(num) (num_joys>num && SDL_JoystickGetButton(joys[num], 0))
 
@@ -39,10 +58,10 @@ void update_player_actions(void)
 	int tmp;
 
 	if (client_player_num < 0) {
-		tmp = (key_pressed(KEY_PL1_LEFT) == 1) || JOY_LEFT(3);
+		tmp = (key_pressed(KEY_PL1_LEFT) == 1) || ACCELEROMETER_JOY_LEFT() || JOY_LEFT(3);
 		if (tmp != player[0].action_left)
 			tellServerPlayerMoved(0, MOVEMENT_LEFT, tmp);
-		tmp = (key_pressed(KEY_PL1_RIGHT) == 1) || JOY_RIGHT(3);
+		tmp = (key_pressed(KEY_PL1_RIGHT) == 1) || ACCELEROMETER_JOY_RIGHT() || JOY_RIGHT(3);
 		if (tmp != player[0].action_right)
 			tellServerPlayerMoved(0, MOVEMENT_RIGHT, tmp);
 		tmp = (key_pressed(KEY_PL1_JUMP) == 1) || JOY_JUMP(3);
@@ -93,11 +112,35 @@ void update_player_actions(void)
 
 void init_inputs(void)
 {
-	int i;
+	int i, j = 0;
 
 	num_joys = SDL_NumJoysticks();
-	for(i = 0; i < 4 && i < num_joys; ++i)
-		joys[i] = SDL_JoystickOpen(i);
+	for(i = 0; i < num_joys; ++i) {
+		int is_accelerometer = 0;
+#ifdef ACCELEROMETER_JOY_SUPPORTED
+		if (!accelerometer) {
+			const char* name = SDL_JoystickNameForIndex(i);
+			if (name && strcasestr(name, "accelerometer")) {
+				is_accelerometer = 1;
+			}
+		}
+#endif
+
+		if ((is_accelerometer) || (j < 4))
+		{
+			SDL_Joystick* joystick = SDL_JoystickOpen(i);
+			if (joystick) {
+				if (is_accelerometer) {
+					accelerometer = joystick;
+				} else {
+					joys[j] = joystick;
+					++j;
+				}
+			} else {
+				fprintf(stderr, "Could not open joystick %d", i);
+			}
+		}
+	}
 
 	main_info.mouse_enabled = 0;
 	main_info.joy_enabled = 0;
