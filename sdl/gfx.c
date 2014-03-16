@@ -303,6 +303,11 @@ void fs_toggle()
 	
 	if (SDL_SetWindowFullscreen(jnb_window,fullscreen_flags) == 0)
 		fullscreen ^= 1;
+
+	if(fullscreen)
+		SDL_ShowCursor(0);
+	else
+		SDL_ShowCursor(1);
 }
 
 void exit_fullscreen()
