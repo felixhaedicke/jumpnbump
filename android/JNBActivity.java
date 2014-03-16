@@ -10,6 +10,12 @@ import android.view.ViewConfiguration;
 public class JNBActivity extends SDLActivity {
 
 	@Override
+	protected void onResume() {
+		super.onResume();
+		enableImmersiveModeIfNeeded();
+	}
+
+	@Override
 	public void onWindowFocusChanged(boolean hasFocus) {
 		if (hasFocus) {
 			enableImmersiveModeIfNeeded();
@@ -37,3 +43,4 @@ public class JNBActivity extends SDLActivity {
 	}
 
 }
+
