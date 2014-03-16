@@ -51,7 +51,7 @@ SDL_Joystick* accelerometer = NULL;
 #define JOY_RIGHT(num) (num_joys>num && SDL_JoystickGetAxis(joys[num], 0)>3200)
 
 /* I find using the vertical axis to be annoying -- dnb */
-#define JOY_JUMP(num) (num_joys>num && SDL_JoystickGetButton(joys[num], 0))
+#define JOY_JUMP(num) (num_joys>num && (SDL_JoystickGetButton(joys[num], 0) || SDL_JoystickGetButton(joys[num], 20)))
 
 void update_player_actions(void)
 {
