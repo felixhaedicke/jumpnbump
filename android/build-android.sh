@@ -6,11 +6,12 @@ ANDROID_SDK_DIR=$1
 ANDROID_NDK_DIR=$2
 SDL_SRC_DIR=$3
 SDL_MIXER_SRC_DIR=$4
-BUILD_CONFIGURATION=$5
+SDL_NET_SRC_DIR=$5
+BUILD_CONFIGURATION=$6
 
-if [ $# -lt 5 ]
+if [ $# -lt 6 ]
 then
-  echo "Usage: ./build-android.sh <Android SDK directory> <Android NDK directory> <SDL source directory> <SDL mixer source directory> <debug|release>" >&2
+  echo "Usage: ./build-android.sh <Android SDK directory> <Android NDK directory> <SDL source directory> <SDL_mixer source directory> <SDL_net source directory> <debug|release>" >&2
   exit 1
 fi
 
@@ -25,6 +26,7 @@ SRC_DIR="`dirname ${CURRENT_SCRIPT}`"/../
 
 SDL_SRC_DIR="`readlink -f ${SDL_SRC_DIR}`"
 SDL_MIXER_SRC_DIR="`readlink -f ${SDL_MIXER_SRC_DIR}`"
+SDL_NET_SRC_DIR="`readlink -f ${SDL_NET_SRC_DIR}`"
 
 "${SRC_DIR}/generate_version_h.sh" || exit $?
 "${SRC_DIR}/generate_jumpbump_dat.sh" || exit $?
@@ -70,15 +72,18 @@ done
 ln -s "${SDL_SRC_DIR}" "android-project/jni/SDL" || exit $?
 echo "APP_PLATFORM := android-10" >> "android-project/jni/Application.mk" || exit $?
 sed -i "s|YourSourceHere.c|${SRC_LIST}|g" "android-project/jni/src/Android.mk" || exit $?
-sed -i "s|LOCAL_C_INCLUDES :=|LOCAL_C_INCLUDES := ${PWD} ${SRC_DIR} ../SDL_mixer|g" "android-project/jni/src/Android.mk" || exit $?
-sed -i "s|LOCAL_SHARED_LIBRARIES :=|LOCAL_SHARED_LIBRARIES := SDL2_mixer|g" "android-project/jni/src/Android.mk" || exit $?
+sed -i "s|LOCAL_C_INCLUDES :=|LOCAL_C_INCLUDES := ${PWD} ${SRC_DIR} ../SDL_mixer ../SDL_net|g" "android-project/jni/src/Android.mk" || exit $?
+sed -i "s|LOCAL_SHARED_LIBRARIES :=|LOCAL_SHARED_LIBRARIES := SDL2_mixer SDL2_net|g" "android-project/jni/src/Android.mk" || exit $?
 
 ln -s "${SDL_MIXER_SRC_DIR}" "android-project/jni/SDL_mixer" || exit $?
 sed -i "s/SUPPORT_MOD_MIKMOD := true/SUPPORT_MOD_MIKMOD := false/g" "android-project/jni/SDL_mixer/Android.mk" || exit $?
 sed -i "s/SUPPORT_MP3_SMPEG := true/SUPPORT_MP3_SMPEG := false/g" "android-project/jni/SDL_mixer/Android.mk" || exit $?
 sed -i "s/SUPPORT_OGG := true/SUPPORT_OGG := false/g" "android-project/jni/SDL_mixer/Android.mk" || exit $?
 
+ln -s "${SDL_NET_SRC_DIR}" "android-project/jni/SDL_net" || exit $?
+
 sed -i "s|//System.loadLibrary(\"SDL2_mixer\")|System.loadLibrary(\"SDL2_mixer\")|g;" "android-project/src/org/libsdl/app/SDLActivity.java" || exit $?
+sed -i "s|//System.loadLibrary(\"SDL2_mixer\")|System.loadLibrary(\"SDL2_net\")|g;" "android-project/src/org/libsdl/app/SDLActivity.java" || exit $?
 
 cd android-project || exit $?
 NDK_BUILD_ARGS="-j4"
