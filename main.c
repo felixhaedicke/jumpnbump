@@ -37,9 +37,9 @@
 #include <SDL.h>
 #include <SDL_main.h>
 
-#ifdef USE_NET
+#ifndef NO_SDL_NET
 #include <SDL_net.h>
-#endif /* USE_NET */
+#endif /* NO_SDL_NET */
 
 #ifndef M_PI
 #define M_PI		3.14159265358979323846
@@ -253,7 +253,7 @@ int client_player_num = -1;
 int is_server = 1;
 int is_net = 0;
 
-#ifdef USE_NET
+#ifndef NO_SDL_NET
 TCPsocket sock = NULL;
 SDLNet_SocketSet socketset = NULL;
 
@@ -289,7 +289,7 @@ typedef struct
 #define NETCMD_KILL         (0xF00DF00D + 8)
 
 
-#ifdef USE_NET
+#ifndef NO_SDL_NET
 void bufToPacket(const char *buf, NetPacket *pkt)
 {
 	SDLNet_Write32(*((Uint32*) (buf +  0)), &pkt->cmd);
@@ -484,7 +484,7 @@ void tellServerGoodbye(void)
 		sendPacketToSock(sock, &pkt);
 	}
 }
-#endif /* USE_NET */
+#endif /* NO_SDL_NET */
 
 
 void processMovePacket(NetPacket *pkt)
@@ -520,7 +520,7 @@ void tellServerPlayerMoved(int playerid, int movement_type, int newval)
 
 	if (is_server) {
 		processMovePacket(&pkt);
-#ifdef USE_NET
+#ifndef NO_SDL_NET
 		if (is_net)
 			sendPacketToAll(&pkt);
 	} else {
@@ -530,7 +530,7 @@ void tellServerPlayerMoved(int playerid, int movement_type, int newval)
 }
 
 
-#ifdef USE_NET
+#ifndef NO_SDL_NET
 void tellServerNewPosition(void)
 {
 	NetPacket pkt;
@@ -545,7 +545,7 @@ void tellServerNewPosition(void)
 		sendPacketToSock(sock, &pkt);
 	}
 }
-#endif /* USE_NET */
+#endif /* NO_SDL_NET */
 
 
 void processKillPacket(NetPacket *pkt)
@@ -591,7 +591,7 @@ void processKillPacket(NetPacket *pkt)
 }
 
 
-#ifdef USE_NET
+#ifndef NO_SDL_NET
 void processPositionPacket(NetPacket *pkt)
 {
 	int playerid = pkt->arg;
@@ -688,7 +688,7 @@ void serverSendAlive(int playerid)
 	pkt.arg3 = player[playerid].y;
 	sendPacketToAll(&pkt);
 }
-#endif /* USE_NET */
+#endif /* NO_SDL_NET */
 
 
 void serverSendKillPacket(int killer, int victim)
@@ -702,14 +702,14 @@ void serverSendKillPacket(int killer, int victim)
 	pkt.arg3 = player[victim].x;
 	pkt.arg4 = player[victim].y;
 	processKillPacket(&pkt);
-#ifdef USE_NET
+#ifndef NO_SDL_NET
 	if (is_net)
 		sendPacketToAll(&pkt);
 #endif
 }
 
 
-#ifdef USE_NET
+#ifndef NO_SDL_NET
 void update_players_from_clients(void)
 {
 	int i;
@@ -977,7 +977,7 @@ void connect_to_server(char *netarg)
 
 	wait_for_greenlight();
 }
-#endif /* USE_NET */
+#endif /* NO_SDL_NET */
 
 
 static void flip_pixels(char *pixels)
@@ -1083,7 +1083,7 @@ int main(int argc, char *argv[])
 			while (update_count) {
 
 				if (key_pressed(1) == 1) {
-#ifdef USE_NET
+#ifndef NO_SDL_NET
 					if (is_net) {
 						if (is_server) {
 							serverTellEveryoneGoodbye();
@@ -1170,7 +1170,7 @@ int main(int argc, char *argv[])
 					last_keys[0] = 0;
 				}
 
-#ifdef USE_NET
+#ifndef NO_SDL_NET
 				if (is_net) {
 					if (is_server) {
 						update_players_from_clients();
@@ -1466,7 +1466,7 @@ int main(int argc, char *argv[])
 				update_count--;
 			}
 
-#ifdef USE_NET
+#ifndef NO_SDL_NET
 			if (is_net) {
 				if ( (player[client_player_num].dead_flag == 0) &&
 					(
@@ -1483,7 +1483,7 @@ int main(int argc, char *argv[])
 
 			update_count = intr_sysupdate();
 
-#ifdef USE_NET
+#ifndef NO_SDL_NET
 			if (is_net) {
 				if ((server_said_bye) || ((fade_flag == 0) && (end_loop_flag == 1)))
 					break;
@@ -1493,7 +1493,7 @@ int main(int argc, char *argv[])
 				break;
 		}
 
-#ifdef USE_NET
+#ifndef NO_SDL_NET
 		if (is_net) {
 			if (is_server) {
 				serverTellEveryoneGoodbye();
@@ -2271,7 +2271,7 @@ void position_player(int player_num)
 			player[player_num].image = player_anims[player[player_num].anim].frame[player[player_num].frame].image;
 
 			if (is_server) {
-#ifdef USE_NET
+#ifndef NO_SDL_NET
 				if (is_net)
 					serverSendAlive(player_num);
 #endif
@@ -2923,7 +2923,7 @@ static void preread_datafile(const char *fname)
 
 int init_program(int argc, char *argv[], char *pal)
 {
-#ifdef USE_NET
+#ifndef NO_SDL_NET
 	char *netarg = NULL;
 #endif
 	unsigned char *handle = (unsigned char *) NULL;
@@ -2939,7 +2939,7 @@ int init_program(int argc, char *argv[], char *pal)
 		1, 0, 8, 5, 0, 0, 0, 0, 0, 0
 	};
 
-#ifdef USE_NET
+#ifndef NO_SDL_NET
 	memset(&net_info, 0, sizeof(net_info));
 #endif
 
@@ -2985,7 +2985,7 @@ int init_program(int argc, char *argv[], char *pal)
 					if (client_player_num < 0)
 						client_player_num = atoi(argv[c1 + 1]);
 				}
-#ifdef USE_NET
+#ifndef NO_SDL_NET
 			} else if (stricmp(argv[c1], "-server") == 0) {
 				if (c1 < (argc - 1)) {
 					is_server = 1;
@@ -3014,7 +3014,7 @@ int init_program(int argc, char *argv[], char *pal)
 				printf("  -h                       this help\n");
 				printf("  -v                       print version\n");
 				printf("  -dat level.dat           play a different level\n");
-#ifdef USE_NET
+#ifndef NO_SDL_NET
 				printf("  -server playercount      start as server waiting for players\n");
 				printf("  -connect host            connect to server\n");
 #endif
@@ -3204,7 +3204,7 @@ all provided the user didn't choose one on the commandline. */
 
     init_inputs();
 
-#ifdef USE_NET
+#ifndef NO_SDL_NET
 	if (is_net) {
 		if (is_server) {
 			init_server(netarg);
