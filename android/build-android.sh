@@ -54,7 +54,7 @@ cp -r "${SDL_SRC_DIR}/android-project" . || exit $?
 
 mkdir -p android-project/src/org/jumpnbump || exit $?
 
-cp "${SRC_DIR}/android"/* android-project/src/org/jumpnbump || exit $?
+cp "${SRC_DIR}/android"/*.java android-project/src/org/jumpnbump || exit $?
 
 xmlstarlet ed -L -N android=http://schemas.android.com/apk/res/android -u //manifest/@android:versionCode -v `cat "${SRC_DIR}/VERSION_CODE"` android-project/AndroidManifest.xml || exit $?
 xmlstarlet ed -L -N android=http://schemas.android.com/apk/res/android -u //manifest/@android:versionName -v `cat "${SRC_DIR}/VERSION"` android-project/AndroidManifest.xml || exit $?
