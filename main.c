@@ -269,11 +269,11 @@ NetInfo net_info[JNB_MAX_PLAYERS];
 
 typedef struct
 {
-	unsigned long cmd;
-	long arg;
-	long arg2;
-	long arg3;
-	long arg4;
+	Uint32 cmd;
+	int32_t arg;
+	int32_t arg2;
+	int32_t arg3;
+	int32_t arg4;
 } NetPacket;
 
 #define NETPKTBUFSIZE (4 + 4 + 4 + 4 + 4)
@@ -669,7 +669,7 @@ int update_players_from_server(void)
 		} else if (pkt.cmd == NETCMD_KILL) {
 			processKillPacket(&pkt);
 		} else {
-			printf("CLIENT: Got an unknown packet: 0x%lX.\n", pkt.cmd);
+			printf("CLIENT: Got an unknown packet: 0x%uX.\n", (unsigned int) pkt.cmd);
 		}
 	}
 
@@ -742,7 +742,7 @@ void update_players_from_clients(void)
 			processMovePacket(&pkt);
 			sendPacketToAll(&pkt);
 		} else {
-			printf("SERVER: Got unknown packet (0x%lX).\n", pkt.cmd);
+			printf("SERVER: Got unknown packet (0x%uX).\n", (unsigned int) pkt.cmd);
 		}
 	}
 }
@@ -835,7 +835,7 @@ void init_server(const char *netarg)
 			continue;
 		}
 
-		printf("SERVER: Client claims to be player #%ld.\n", pkt.arg);
+		printf("SERVER: Client claims to be player #%d.\n", (int) pkt.arg);
 
 		if (-1 == pkt.arg) {
 			int i;
@@ -964,7 +964,7 @@ void connect_to_server(char *netarg)
 	}
 
 	if (pkt.cmd != NETCMD_ACK) {
-		printf("CLIENT: Unexpected packet (cmd=0x%lX).\n", pkt.cmd);
+		printf("CLIENT: Unexpected packet (cmd=0x%uX).\n", (unsigned int) pkt.cmd);
 		SDLNet_FreeSocketSet(socketset);
 		SDLNet_TCP_Close(sock);
 		exit(42);
